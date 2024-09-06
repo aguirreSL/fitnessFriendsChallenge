@@ -3,40 +3,70 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<h1>Welcome to the Fitness Tracker</h1>
-<p>Track your fitness journey, monitor your diet, and achieve your goals.</p>
+<div class="container mt-5">
+    <h1 class="text-center">Welcome to the Fitness Tracker</h1>
+    <p class="text-center">Track your fitness journey, monitor your diet, and achieve your goals.</p>
 
-<h2>Leaderboard</h2>
-<form method="GET" action="{% url 'home' %}">
-    {% csrf_token %}
-    <label for="challenge">Select Challenge:</label>
-    <select name="challenge" id="challenge" onchange="this.form.submit();">
-        <option value="">All Challenges</option>
-        {% for challenge in active_challenges %}
-        <option value="{{ challenge.id }}" {% if challenge == selected_challenge %}selected{% endif %}>
-            {{ challenge.name }}
-        </option>
-        {% endfor %}
-    </select>
-</form>
+    <div class="row mt-4">
+        <div class="col-md-6 offset-md-3">
+            <h2 class="text-center">Leaderboard</h2>
+            <form method="GET" action="{% url 'home' %}" class="form-inline justify-content-center">
+                {% csrf_token %}
+                <label for="challenge" class="mr-2">Select Challenge:</label>
+                <select name="challenge" id="challenge" class="form-control" onchange="this.form.submit();">
+                    <option value="">All Challenges</option>
+                    {% for challenge in active_challenges %}
+                    <option value="{{ challenge.id }}" {% if challenge == selected_challenge %}selected{% endif %}>
+                        {{ challenge.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    </div>
 
-<table>
-    <tr>
-        <th>Rank</th>
-        <th>User</th>
-        <th>Total TSS</th>
-    </tr>
-    {% for entry in leaderboard_data %}
-    <tr>
-        <td>{{ forloop.counter }}</td>
-        <td>{{ entry.user__username }}</td>
-        <td>{{ entry.total_tss }}</td>
-    </tr>
-    {% endfor %}
-</table>
+    <div class="row mt-4">
+        <div class="col-md-8 offset-md-2">
+            <table class="table table-striped table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Rank</th>
+                        <th>User</th>
+                        <th>TSS (tot)</th>
+                        <th>Challenge</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in leaderboard_data %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ entry.user__username }}</td>
+                        <td>{{ entry.total_tss }}</td>
+                        <td>{{ selected_challenge.name }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-<h2>Your TSS for the Last Week</h2>
-<canvas id="tssChart"></canvas>
+    <div class="row mt-4">
+        <div class="col-md-8 offset-md-2 text-center">
+            {% if user_position %}
+                <h3>Your Position: {{ user_position }} @ {{ selected_challenge.name }}</h3>
+            {% else %}
+                <h3>You are not participating in this challenge.</h3>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-8 offset-md-2">
+            <h2 class="text-center">Your TSS for the Last Week</h2>
+            <canvas id="tssChart"></canvas>
+        </div>
+    </div>
+</div>
 
 <script>
     var ctx = document.getElementById('tssChart').getContext('2d');

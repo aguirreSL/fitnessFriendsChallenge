@@ -3,7 +3,7 @@
     <h1>Activity List</h1>
     <ul>
     {% for activity in activities %}
-        <li>{{ activity.activity_type }}: {{ activity.duration }}, Calories burned: {{activity.calories_burned}}, Date: {{date_time}}</li>
+        <li>{{ activity.activity_type }}: {{ activity.duration }}, Calories: {{activity.calories_burned}}, Date: {{activity.date_time}} , TSS: {{ activity.tss }}</li>
     {% empty %}
         <li>No activities recorded.</li>
     {% endfor %}

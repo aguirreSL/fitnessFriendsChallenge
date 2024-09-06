@@ -3,41 +3,41 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<div class="homepage">
-    <h1>Welcome to the Fitness Tracker</h1>
-    <p>Track your fitness journey, monitor your diet, and achieve your goals.</p>
+<h1>Welcome to the Fitness Tracker</h1>
+<p>Track your fitness journey, monitor your diet, and achieve your goals.</p>
 
-    <section class="leaderboard">
-        <h2>Leaderboard</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>User</th>
-                    <th>Total TSS</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for entry in leaderboard_data %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ entry.user__username }}</td>
-                    <td>{{ entry.total_tss }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </section>
+<h2>Leaderboard</h2>
+<form method="GET" action="{% url 'home' %}">
+    {% csrf_token %}
+    <label for="challenge">Select Challenge:</label>
+    <select name="challenge" id="challenge" onchange="this.form.submit();">
+        <option value="">All Challenges</option>
+        {% for challenge in active_challenges %}
+        <option value="{{ challenge.id }}" {% if challenge == selected_challenge %}selected{% endif %}>
+            {{ challenge.name }}
+        </option>
+        {% endfor %}
+    </select>
+</form>
 
-    <section class="tss-graph">
-        <h2>Your TSS for the Last Week</h2>
-        <canvas id="tssChart"></canvas>
-    </section>
-</div>
-{% endblock %}
+<table>
+    <tr>
+        <th>Rank</th>
+        <th>User</th>
+        <th>Total TSS</th>
+    </tr>
+    {% for entry in leaderboard_data %}
+    <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ entry.user__username }}</td>
+        <td>{{ entry.total_tss }}</td>
+    </tr>
+    {% endfor %}
+</table>
 
-{% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<h2>Your TSS for the Last Week</h2>
+<canvas id="tssChart"></canvas>
+
 <script>
     var ctx = document.getElementById('tssChart').getContext('2d');
     var tssChart = new Chart(ctx, {
@@ -47,13 +47,19 @@
             datasets: [{
                 label: 'TSS',
                 data: {{ tss_sums|safe }},
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
                 borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
+                borderWidth: 2,
+                fill: false
             }]
         },
         options: {
             scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'day'
+                    }
+                },
                 y: {
                     beginAtZero: true
                 }
@@ -61,4 +67,5 @@
         }
     });
 </script>
+
 {% endblock %}

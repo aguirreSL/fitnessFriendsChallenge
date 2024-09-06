@@ -15,6 +15,7 @@
         <nav>
             {% if user.is_authenticated %}
             <a href="{% url 'home' %}">Home | </a>
+            <a href="{% url 'profile' %}">Profile | </a>
             <a href="{% url 'activity_list' %}">Activity List | </a>
             {% comment %} <a href="{% url 'diet_log' %}">Diet Log | </a> {% endcomment %}
             <a href="{% url 'weight_tracker' %}">Weight Tracker | </a>

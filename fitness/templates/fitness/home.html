@@ -7,33 +7,58 @@
     <h1>Welcome to the Fitness Tracker</h1>
     <p>Track your fitness journey, monitor your diet, and achieve your goals.</p>
 
-    <section class="features">
-        <h2>Features</h2>
-        <ul>
-            <li><strong>Activity Tracking:</strong> Log your daily activities and workouts.</li>
-            <li><strong>Dietary Logs:</strong> Keep track of your diet and nutrition.</li>
-            <li><strong>Goal Setting:</strong> Set and track your fitness goals.</li>
-        </ul>
+    <section class="leaderboard">
+        <h2>Leaderboard</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>User</th>
+                    <th>Total TSS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in leaderboard_data %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ entry.user__username }}</td>
+                    <td>{{ entry.total_tss }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </section>
 
-    <section class="navigation">
-        <h2>Get Started</h2>
-        <ul>
-            {% if user.is_authenticated %}
-            <p>Welcome,{{ user.username }}, what would you want to check out?</p>
-            <li><a href="{% url 'profile' %}">View Profile</a></li>
-            <li><a href="{% url 'activity_list' %}">View Activity List</a></li>
-            <li><a href="{% url 'diet_log' %}">Log Your Diet</a></li>
-            <li><a href="{% url 'weight_tracker' %}">Track your weight</a></li>
-            <li><a href="{% url 'logout' %}">Logout</a></li>
-            {% else %}
-            <p>You are not logged in. Please login or create an account.</p>
-            <li><a href="{% url 'login' %}">Login</a></li>
-            <li><a href="{% url 'register' %}">Create an Account</a></li>
-            {% endif %}
-
-            <!-- Add more links as needed -->
-        </ul>
+    <section class="tss-graph">
+        <h2>Your TSS for the Last Week</h2>
+        <canvas id="tssChart"></canvas>
     </section>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var ctx = document.getElementById('tssChart').getContext('2d');
+    var tssChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ tss_dates|safe }},
+            datasets: [{
+                label: 'TSS',
+                data: {{ tss_sums|safe }},
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
 {% endblock %}

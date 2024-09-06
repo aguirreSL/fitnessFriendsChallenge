@@ -1,10 +1,11 @@
 {% extends 'fitness/base.html' %}
 
 {% block content %}
-<h2>Add Activity</h2>
+<h2>Log Your Activity</h2>
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
+    {% comment %} <label for="id_intensity">Training Stress Score TSS <a href="https://help.trainingpeaks.com/hc/en-us/articles/204071944-Training-Stress-Scores-TSS-Explained" target="_blank" title="Learn more about TSS"><i>ℹ️</i></a></label> {% endcomment %}
     <button type="submit">Save</button>
 </form>
 {% endblock %}

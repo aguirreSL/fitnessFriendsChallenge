@@ -1,0 +1,15 @@
+{% extends 'fitness/base.html' %}
+
+{% block title %}Create/Edit Challenge{% endblock %}
+
+{% block content %}
+<h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} Challenge</h2>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save</button>
+</form>
+
+<a href="{% url 'challenge_list' %}">Back to Challenges</a>
+{% endblock %}

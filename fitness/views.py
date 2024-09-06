@@ -199,3 +199,33 @@ def group_detail(request, group_id):
         'challenges': challenges,
         'members': members
     })
+
+@login_required
+def challenge_list(request):
+    challenges = Challenge.objects.filter(group__in=request.user.fitness_groups.all())
+    return render(request, 'fitness/challenge_list.html', {'challenges': challenges})
+
+@login_required
+def create_challenge(request):
+    if request.method == 'POST':
+        form = ChallengeForm(request.POST, user=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('challenge_list')
+    else:
+        form = ChallengeForm(user=request.user)
+    return render(request, 'fitness/challenge_form.html', {'form': form})
+
+@login_required
+def edit_challenge(request, pk):
+    challenge = get_object_or_404(Challenge, pk=pk, group__in=request.user.fitness_groups.all())
+    if request.method == 'POST':
+        form = ChallengeForm(request.POST, instance=challenge, user=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('challenge_list')
+    else:
+        form = ChallengeForm(instance=challenge, user=request.user)
+
+    return render(request, 'fitness/challenge_form.html', {'form': form})
+  

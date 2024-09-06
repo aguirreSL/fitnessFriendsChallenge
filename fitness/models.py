@@ -103,7 +103,7 @@ class Challenge(models.Model):
     challenge_type = models.CharField(max_length=3, choices=CHALLENGE_TYPE_CHOICES)
     target_amount = models.PositiveIntegerField()
     start_date = models.DateField()
-    end_date = models.DateField()
+    end_date = models.DateField()    
     
     def __str__(self):
         return f"Challenge: {self.challenge_type} - Target: {self.target_amount}"

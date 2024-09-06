@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from .models import UserProfile, FitnessActivity, WeightEntry, Group, Challenge, LeaderboardEntry, Invitation #,DietaryLog
 from django.utils import timezone
 from datetime import datetime
+from django.forms.widgets import DateInput #DateInput to be able to use the little calendar :)
 
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField()
@@ -76,7 +77,17 @@ class GroupForm(forms.ModelForm):
 class ChallengeForm(forms.ModelForm):
     class Meta:
         model = Challenge
-        fields = ['group', 'challenge_type', 'target_amount', 'start_date', 'end_date']
+        fields = ['name', 'group', 'challenge_type', 'target_amount', 'start_date', 'end_date']
+        widgets = {
+            'start_date': DateInput(attrs={'type': 'date'}),
+            'end_date': DateInput(attrs={'type': 'date'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super(ChallengeForm, self).__init__(*args, **kwargs)
+        if user:
+            self.fields['group'].queryset = user.fitness_groups.all()
 
 class InvitationForm(forms.ModelForm):
     class Meta:

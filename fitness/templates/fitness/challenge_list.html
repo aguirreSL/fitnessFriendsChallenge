@@ -1,0 +1,17 @@
+{% extends 'fitness/base.html' %}
+
+{% block title %}Manage Challenges{% endblock %}
+
+{% block content %}
+<h2>Manage Challenges</h2>
+<a href="{% url 'create_challenge' %}">Create New Challenge</a>
+
+<ul>
+    {% for challenge in challenges %}
+    <li>
+        {{ challenge.name }} ({{ challenge.challenge_type }}) - 
+        <a href="{% url 'edit_challenge' challenge.id %}">Edit</a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

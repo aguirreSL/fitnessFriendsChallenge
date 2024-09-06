@@ -1,11 +1,20 @@
 {% extends 'fitness/base.html' %}
 
 {% block content %}
-<h2>{{ user.username }}'s Profile</h2>
-<p>Email: {{ user.email }}</p>
-<p>Date of Birth: {{ user_profile.date_of_birth }}</p>
-<p>Height: {{ user_profile.height }} cm</p>
-<p>Weight: {{ user_profile.weight }} kg</p>
-<p>Fitness Level: {{ user_profile.fitness_level }}</p>
-<!-- Add more fields as needed -->
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h2 class="text-center">{{ user.username }}'s Profile</h2>
+        </div>
+        <div class="card-body">
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Date of Birth:</strong> {{ user_profile.date_of_birth }}</p>
+            <p><strong>Height:</strong> {{ user_profile.height }} cm</p>
+            <p><strong>Weight:</strong> {{ user_profile.weight }} kg</p>
+            <p><strong>Fitness Level:</strong> {{ user_profile.fitness_level }}</p>
+            <p><strong>Groups:</strong> {{ user_profile     }}</p>
+            <!-- Add more fields as needed -->
+        </div>
+    </div>
+</div>
 {% endblock %}

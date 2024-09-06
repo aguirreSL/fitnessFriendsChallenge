@@ -131,9 +131,13 @@ def weight_tracker(request):
 
 def profile(request):
     user_profile = UserProfile.objects.get(user=request.user)
+    groups = Group.objects.filter(members=request.user)
+    challenges = Challenge.objects.filter(group__members=request.user)
     context = {
         'user': request.user,
-        'user_profile': user_profile
+        'user_profile': user_profile,
+        'groups': groups,
+        'challenges': challenges
     }
     return render(request, 'fitness/profile.html', context)
 

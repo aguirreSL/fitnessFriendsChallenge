@@ -24,7 +24,9 @@ Welcome to the **Fitness Friends Challenge**, our intuitive and dynamic web appl
 1. **Clone the Repository**:
 
 ``` git clone git@github.com:aguirreSL/fitnessFriendsChallenge.git``` 
-or
+
+```or```
+
 ``` git clone https://github.com/aguirreSL/fitnessFriendsChallenge.git``` 
 
 2. **Navigate to the project directory**:

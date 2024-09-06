@@ -16,4 +16,7 @@ urlpatterns = [
     path('profile/', profile, name='profile'),
     path('create_group/', views.create_group, name='create_group'),
     path('groups/', views.group_list, name='group_list'),
+    path('groups/<int:group_id>/invite/', views.send_invitation, name='send_invitation'),
+    path('invitations/<int:invitation_id>/respond/<str:response>/', views.respond_invitation, name='respond_invitation'),
+    path('groups/<int:group_id>/', views.group_detail, name='group_detail'),
     ]

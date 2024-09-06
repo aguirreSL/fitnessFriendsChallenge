@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import UserProfile, FitnessActivity, WeightEntry, Group, Challenge, LeaderboardEntry #,DietaryLog
+from .models import UserProfile, FitnessActivity, WeightEntry, Group, Challenge, LeaderboardEntry, Invitation #,DietaryLog
 from django.utils import timezone
 from datetime import datetime
 
@@ -77,3 +77,8 @@ class ChallengeForm(forms.ModelForm):
     class Meta:
         model = Challenge
         fields = ['group', 'challenge_type', 'target_amount', 'start_date', 'end_date']
+
+class InvitationForm(forms.ModelForm):
+    class Meta:
+        model = Invitation
+        fields = ['receiver']

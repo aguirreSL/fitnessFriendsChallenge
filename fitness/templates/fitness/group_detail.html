@@ -1,0 +1,30 @@
+{% extends 'fitness/base.html' %}
+
+{% block title %}Group Details{% endblock %}
+
+{% block content %}
+<div class="group-details">
+    <h1>{{ group.name }}Details</h1>
+    
+    <h2>Members</h2>
+    <ul>
+        {% for member in group.members.all %}
+        <li>{{ member.username }}</li>
+        {% endfor %}
+    </ul>
+    
+    <h2>Challenges</h2>
+    <ul>
+        {% for challenge in group.challenge_set.all %}
+        <li>{{ challenge.name }}</li>
+        {% endfor %}
+    </ul>
+    
+    <h2>Send Invitation</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Send Invitation</button>
+    </form>
+</div>
+{% endblock %}

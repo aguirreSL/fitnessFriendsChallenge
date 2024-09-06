@@ -1,7 +1,9 @@
-from django.shortcuts import render, redirect
-from .models import FitnessActivity, WeightEntry, UserProfile, Group, Challenge, LeaderboardEntry
-from .forms import UserRegisterForm, ActivityForm, WeightEntryForm, GroupForm, ChallengeForm #,DietaryLogForm
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import FitnessActivity, WeightEntry, UserProfile, Group, Challenge, LeaderboardEntry, Invitation
+from .forms import UserRegisterForm, ActivityForm, WeightEntryForm, GroupForm, ChallengeForm, InvitationForm #,DietaryLogForm
 from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
+
 
 from django.db.models import Sum #added to build home 
 from django.utils.timezone import now, timedelta #added to build home 
@@ -132,6 +134,7 @@ def create_group(request):
 
 def group_list(request):
     groups = Group.objects.filter(members=request.user)
+    print(groups)  # Debugging: Check if groups are retrieved
     return render(request, 'fitness/group_list.html', {'groups': groups})
 
 
@@ -148,3 +151,38 @@ def create_challenge(request):
 def challenge_list(request):
     challenges = Challenge.objects.filter(group__members=request.user)
     return render(request, 'challenge_list.html', {'challenges': challenges})
+
+def send_invitation(request, group_id):
+    group = Group.objects.get(id=group_id)
+    if request.method == 'POST':
+        form = InvitationForm(request.POST)
+        if form.is_valid():
+            invitation = form.save(commit=False)
+            invitation.sender = request.user
+            invitation.group = group
+            invitation.save()
+            return redirect('group_detail', group_id=group.id)
+    else:
+        form = InvitationForm()
+    return render(request, 'fitness/send_invitation.html', {'form': form, 'group': group})
+
+def respond_invitation(request, invitation_id, response):
+    invitation = Invitation.objects.get(id=invitation_id)
+    if response == 'accept':
+        invitation.status = 'Accepted'
+        invitation.group.members.add(invitation.receiver)
+    else:
+        invitation.status = 'Declined'
+    invitation.save()
+    return redirect('group_list')
+
+@login_required
+def group_detail(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+    challenges = Challenge.objects.filter(group=group)
+    members = group.members.all()  # Get all members of the group
+    return render(request, 'fitness/group_detail.html', {
+        'group': group,
+        'challenges': challenges,
+        'members': members
+    })

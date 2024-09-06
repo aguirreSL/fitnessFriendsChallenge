@@ -98,7 +98,7 @@ class Challenge(models.Model):
         ('KM', 'Kilometers'),
         ('TSS', 'TSS'),
     ]
-    
+    name = models.CharField(max_length=100)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     challenge_type = models.CharField(max_length=3, choices=CHALLENGE_TYPE_CHOICES)
     target_amount = models.PositiveIntegerField()
@@ -115,3 +115,11 @@ class LeaderboardEntry(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.challenge} - Progress: {self.progress}"
+
+#Creating invitation system -this model, a form class called InvitationForm and functions in the view (send_invitation and respond_invitation)
+class Invitation(models.Model):
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_invitations')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_invitations')
+    status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Accepted', 'Accepted'), ('Declined', 'Declined')], default='Pending')
+    created_at = models.DateTimeField(auto_now_add=True)

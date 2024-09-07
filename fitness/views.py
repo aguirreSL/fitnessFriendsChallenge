@@ -32,6 +32,10 @@ def register(request):
 
 
 def home(request):
+    if not request.user.is_authenticated:
+       # Redirect to login page if user is not authenticated
+        return redirect('login')  # Make sure to replace 'login' with your actual login view name
+
     # Fetch all active challenges related to the user's fitness groups
     user_groups = request.user.fitness_groups.all()  # Correct related_name
     active_challenges = Challenge.objects.filter(group__in=user_groups, end_date__gte=now())

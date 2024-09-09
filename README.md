@@ -60,5 +60,22 @@ python manage.py createsuperuser
 7. **Run the Server**:
 ``` 
 python manage.py runserver
+```
+
+## UML Diagram
+You can generate the class diagram with:
+```
+python manage.py graph_models -a -o Diagram.png
+```
+```
+Command Breakdown: 
+python manage.py: Runs the Django management script.
+graph_models: Generates a graphical representation of your models.
+-a: Includes all apps in the project.
+-o Diagram.png: Saves the output as Diagram.png.
 ``` 
+
+Below is the current UML diagram for the project:
+![UML](https://github.com/aguirreSL/fitnessFriendsChallenge/blob/main/Diagram.png)
+
 

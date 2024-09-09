@@ -92,4 +92,25 @@ class ChallengeForm(forms.ModelForm):
 class InvitationForm(forms.ModelForm):
     class Meta:
         model = Invitation
-        fields = ['receiver']
+        fields = ['invite_type', 'group', 'challenge', 'invitee', 'message']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['invitee'].queryset = User.objects.none()
+        self.fields['challenge'].queryset = Challenge.objects.none()
+        self.fields['group'].queryset = Group.objects.none()
+
+        if 'group' in self.data:
+            try:
+                group_id = int(self.data.get('group'))
+                self.fields['invitee'].queryset = User.objects.filter(groups__id=group_id)
+                self.fields['challenge'].queryset = Challenge.objects.filter(group_id=group_id)
+            except (ValueError, TypeError):
+                pass  # Handle empty data and invalid inputs
+
+        elif self.instance.pk:
+            if self.instance.invite_type == InviteType.CHALLENGE_INVITE:
+                self.fields['invitee'].queryset = self.instance.group.members.all()
+                self.fields['challenge'].queryset = self.instance.group.challenge_set.all()
+            elif self.instance.invite_type == InviteType.GROUP_INVITE:
+                self.fields['invitee'].queryset = self.instance.group.user_set.all()

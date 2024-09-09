@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 class FitnessActivity(models.Model):
     ACTIVITY_CHOICES = [
@@ -104,7 +105,8 @@ class Challenge(models.Model):
     target_amount = models.PositiveIntegerField()
     start_date = models.DateField()
     end_date = models.DateField()    
-    
+    users = models.ManyToManyField(User, related_name='challenges', blank=True)
+
     def __str__(self):
         return f"Challenge: {self.challenge_type} - Target: {self.target_amount}"
 
@@ -116,10 +118,29 @@ class LeaderboardEntry(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.challenge} - Progress: {self.progress}"
 
-#Creating invitation system -this model, a form class called InvitationForm and functions in the view (send_invitation and respond_invitation)
+#Creating invitation system 
+class InviteType(models.TextChoices):
+    GROUP_INVITE = 'GROUP', 'Group Invite'
+    CHALLENGE_INVITE = 'CHALLENGE', 'Challenge Invite'
+
 class Invitation(models.Model):
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    INVITE_TYPE_CHOICES = [
+        ('group', 'Group'),
+        ('challenge', 'Challenge'),
+    ]
+    invite_type = models.CharField(max_length=10, choices=INVITE_TYPE_CHOICES,default=InviteType.GROUP_INVITE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True, blank=True)
+    challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE, null=True, blank=True)
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_invitations')
-    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_invitations')
-    status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Accepted', 'Accepted'), ('Declined', 'Declined')], default='Pending')
+    invitee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_invitations')
+    message = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        if self.invite_type == 'challenge' and not self.challenge:
+            raise ValidationError('Challenge must be selected for challenge invitations.')
+        if self.invite_type == 'group' and not self.group:
+            raise ValidationError('Group must be selected for group invitations.')
+        if self.invite_type == 'challenge' and self.challenge.group != self.group:
+            raise ValidationError('Challenge must belong to the selected group.')
+

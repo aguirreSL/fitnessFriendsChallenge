@@ -158,9 +158,13 @@ def create_group(request):
     return render(request, 'fitness/create_group.html', {'form': form})
 
 def group_list(request):
-    groups = Group.objects.filter(members=request.user)
-    print(groups)  # Debugging: Check if groups are retrieved
-    return render(request, 'fitness/group_list.html', {'groups': groups})
+    user_groups = request.user.groups.all()  # Groups the user is part of
+    all_groups = Group.objects.all()  # All groups
+
+    return render(request, 'fitness/group_list.html', {
+        'user_groups': user_groups,
+        'all_groups': all_groups
+    })
 
 
 def create_challenge(request):
@@ -177,39 +181,27 @@ def challenge_list(request):
     challenges = Challenge.objects.filter(group__members=request.user)
     return render(request, 'challenge_list.html', {'challenges': challenges})
 
-def send_invitation(request, group_id):
-    group = Group.objects.get(id=group_id)
-    if request.method == 'POST':
-        form = InvitationForm(request.POST)
-        if form.is_valid():
-            invitation = form.save(commit=False)
-            invitation.sender = request.user
-            invitation.group = group
-            invitation.save()
-            return redirect('group_detail', group_id=group.id)
-    else:
-        form = InvitationForm()
-    return render(request, 'fitness/send_invitation.html', {'form': form, 'group': group})
-
-def respond_invitation(request, invitation_id, response):
-    invitation = Invitation.objects.get(id=invitation_id)
-    if response == 'accept':
-        invitation.status = 'Accepted'
-        invitation.group.members.add(invitation.receiver)
-    else:
-        invitation.status = 'Declined'
-    invitation.save()
-    return redirect('group_list')
-
 @login_required
 def group_detail(request, group_id):
     group = get_object_or_404(Group, id=group_id)
     challenges = Challenge.objects.filter(group=group)
     members = group.members.all()  # Get all members of the group
+
+    if request.method == 'POST':
+        form = InvitationForm(request.POST)
+        if form.is_valid():
+            invitation = form.save(commit=False)
+            invitation.group = group  # Set the group for the invitation
+            invitation.save()
+            return redirect('group_detail', group_id=group_id)  # Redirect to avoid resubmission
+    else:
+        form = InvitationForm()
+
     return render(request, 'fitness/group_detail.html', {
         'group': group,
         'challenges': challenges,
-        'members': members
+        'members': members,
+        'form': form
     })
 
 @login_required
@@ -231,13 +223,108 @@ def create_challenge(request):
 @login_required
 def edit_challenge(request, pk):
     challenge = get_object_or_404(Challenge, pk=pk, group__in=request.user.fitness_groups.all())
+
     if request.method == 'POST':
         form = ChallengeForm(request.POST, instance=challenge, user=request.user)
         if form.is_valid():
             form.save()
             return redirect('challenge_list')
+        # Handle invitation form submission
+        if 'invitee' in request.POST:
+            invitee_id = request.POST.get('invitee')
+            invitee = get_object_or_404(UserProfile, pk=invitee_id)
+            Invitation.objects.create(
+                invitee=invitee,
+                group=challenge.group,
+                challenge=challenge,
+                sender=request.user
+            )
+            return redirect('challenge_list')  # After sending invitation
+
     else:
         form = ChallengeForm(instance=challenge, user=request.user)
 
     return render(request, 'fitness/challenge_form.html', {'form': form})
-  
+
+@login_required
+def create_invitation(request):
+    if request.method == 'POST':
+        form = InvitationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('invitations:list')
+    else:
+        form = InvitationForm()
+    return render(request, 'invitations/create_invitation.html', {'form': form})
+
+@login_required
+def send_invitation(request, group_id=None, challenge_id=None):
+    if request.method == 'POST':
+        form = InvitationForm(request.POST)
+        if form.is_valid():
+            invitation = form.save(commit=False)
+            invitation.sender = request.user
+            
+            if challenge_id:
+                # Handle challenge invitation
+                challenge = get_object_or_404(Challenge, id=challenge_id)
+                invitation.challenge = challenge
+                invitation.invite_type = 'challenge'
+                invitation.group = challenge.group  # Set the group based on the challenge
+            
+            elif group_id:
+                # Handle group invitation
+                group = get_object_or_404(Group, id=group_id)
+                invitation.group = group
+                invitation.invite_type = 'group'
+            
+            invitation.save()
+            return redirect('invitations_list')  # Redirect to the list of invitations after sending
+    else:
+        initial_data = {}
+        if challenge_id:
+            initial_data['challenge'] = challenge_id
+        if group_id:
+            initial_data['group'] = group_id
+        form = InvitationForm(initial=initial_data)
+    
+    return render(request, 'fitness/send_invitation.html', {'form': form})
+
+@login_required
+def respond_invitation(request, invitation_id, response):
+    invitation = Invitation.objects.get(id=invitation_id)
+    
+    if invitation.receiver != request.user:
+        return redirect('home')  # Prevent unauthorized access
+    
+    if response == 'accept':
+        invitation.status = 'Accepted'
+        # Add user to group or challenge based on the invitation type
+        if invitation.invitation_type == 'GROUP':
+            invitation.group.members.add(invitation.receiver)
+        elif invitation.invitation_type == 'CHALLENGE':
+            invitation.challenge.participants.add(invitation.receiver)
+    elif response == 'decline':
+        invitation.status = 'Declined'
+    
+    invitation.save()
+    return redirect('invitations_list')  # Redirect to a page listing all invitations
+
+@login_required
+def invitations_list(request):
+    invitations = Invitation.objects.filter(receiver=request.user)
+    return render(request, 'fitness/invitations_list.html', {'invitations': invitations})  
+
+def get_group_users(request, group_id):
+    group = Group.objects.get(id=group_id)
+    users = group.members.all()
+    challenges = Challenge.objects.filter(group=group)
+    users_data = [{'id': user.id, 'username': user.username} for user in users]
+    challenges_data = [{'id': challenge.id, 'name': challenge.name} for challenge in challenges]
+    return JsonResponse({'users': users_data, 'challenges': challenges_data})
+
+def all_groups(request):
+    groups = Group.objects.all()  # Retrieve all groups
+    return render(request, 'fitness/all_groups.html', {'groups': groups})
+
+    

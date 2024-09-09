@@ -1,30 +1,39 @@
 {% extends 'fitness/base.html' %}
 
-{% block title %}Group Details{% endblock %}
-
 {% block content %}
-<div class="group-details">
-    <h1>{{ group.name }}Details</h1>
-    
-    <h2>Members</h2>
-    <ul>
-        {% for member in group.members.all %}
+<h1>{{ group.name }} Details</h1>
+
+<h2>Members</h2>
+<ul>
+    {% for member in group.members.all %}
         <li>{{ member.username }}</li>
+    {% empty %}
+        <li>No members yet.</li>
+    {% endfor %}
+</ul>
+
+<h2>Challenges</h2>
+<ul>
+    {% for challenge in group.challenge_set.all %}
+        <li>{{ challenge.name }} ({{ challenge.challenge_type }})</li>
+    {% endfor %}
+</ul>
+
+<h2>Send Group Invitation</h2>
+<form method="POST" action="{% url 'send_group_invitation' group.id %}">
+    {% csrf_token %}
+    <input type="hidden" name="invite_type" value="group">
+    <label for="invitee">Invite user:</label>
+    <select name="invitee" id="invitee">
+        {% for user in group.user_set.all %}
+            {% if user not in group.members.all %}
+                <option value="{{ user.id }}">{{ user.username }}</option>
+            {% endfor %}
+        {% empty %}
+            <option value="">No users available</option>
         {% endfor %}
-    </ul>
-    
-    <h2>Challenges</h2>
-    <ul>
-        {% for challenge in group.challenge_set.all %}
-        <li>{{ challenge.name }}</li>
-        {% endfor %}
-    </ul>
-    
-    <h2>Send Invitation</h2>
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Send Invitation</button>
-    </form>
-</div>
+    </select>
+    <button type="submit">Send Invitation</button>
+</form>
 {% endblock %}
+

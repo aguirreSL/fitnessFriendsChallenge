@@ -9,4 +9,37 @@
     {% endfor %}
     </ul>
     <a href="{% url 'add_activity' %}">Add Activity</a>
+    
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Send Invitation</button>
+    </form>
+    
+    <script>
+        document.getElementById('id_group').addEventListener('change', function () {
+            var groupId = this.value;
+            fetch('/get_group_users/' + groupId + '/')
+                .then(response => response.json())
+                .then(data => {
+                    var inviteeSelect = document.getElementById('id_invitee');
+                    inviteeSelect.innerHTML = '';
+                    data.users.forEach(function (user) {
+                        var option = document.createElement('option');
+                        option.value = user.id;
+                        option.text = user.username;
+                        inviteeSelect.appendChild(option);
+                    });
+    
+                    var challengeSelect = document.getElementById('id_challenge');
+                    challengeSelect.innerHTML = '';
+                    data.challenges.forEach(function (challenge) {
+                        var option = document.createElement('option');
+                        option.value = challenge.id;
+                        option.text = challenge.name;
+                        challengeSelect.appendChild(option);
+                    });
+                });
+        });
+    </script>
 {% endblock %}

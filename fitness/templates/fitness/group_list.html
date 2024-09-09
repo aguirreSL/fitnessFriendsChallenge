@@ -2,13 +2,28 @@
 
 {% block content %}
 <h2>My Groups</h2>
+
 <p>This is a test message</p>
 
+<h3>Groups I Am Part Of</h3>
 <ul>
-    {% for group in groups %}
+    {% for group in user_groups %}
         <li>
             <a href="{% url 'group_detail' group.id %}">{{ group.name }}</a>
         </li>
+    {% empty %}
+        <li>No groups found.</li>
+    {% endfor %}
+</ul>
+
+<h3>All Groups</h3>
+<ul>
+    {% for group in all_groups %}
+        {% if group not in user_groups %}
+            <li>
+                <a href="{% url 'group_detail' group.id %}">{{ group.name }}</a>
+            </li>
+        {% endif %}
     {% empty %}
         <li>No groups found.</li>
     {% endfor %}

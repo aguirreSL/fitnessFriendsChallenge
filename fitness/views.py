@@ -5,6 +5,8 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum #added to build home 
 from django.utils.timezone import now, timedelta #added to build home 
+from django.contrib.auth.models import User  # Import the User model
+
 
 def activity_list(request):
     activities = FitnessActivity.objects.filter(user=request.user)
@@ -176,6 +178,7 @@ def create_challenge(request):
         form = ChallengeForm(request.POST, user=request.user)
         if form.is_valid():
             form.save()
+            challenge.users.add(request.user)  # Add the current user to the challenge's users
             return redirect('challenge_list')
     else:
         form = ChallengeForm(user=request.user)
@@ -189,22 +192,24 @@ def challenge_list(request):
 def group_detail(request, fitness_group_id):
     group = get_object_or_404(FitnessGroup, id=fitness_group_id)
     challenges = Challenge.objects.filter(fitness_group=group)
-    members = group.members.all()  # Get all members of the group
-
+    members = group.members.all()
+    non_members = User.objects.exclude(id__in=members.values_list('id', flat=True))  # Non-members
+    
     if request.method == 'POST':
-        form = InvitationForm(request.POST)
+        form = InvitationForm(request.POST, group=group)
         if form.is_valid():
             invitation = form.save(commit=False)
-            invitation.fitness_group = group  # Set the fitness group for the invitation
+            invitation.fitness_group = group
             invitation.save()
-            return redirect('group_detail', fitness_group_id=fitness_group_id)  # Redirect to avoid resubmission
+            return redirect('group_detail', fitness_group_id=fitness_group_id)
     else:
-        form = InvitationForm()
+        form = InvitationForm(group=group)
 
     return render(request, 'fitness/group_detail.html', {
         'group': group,
         'challenges': challenges,
         'members': members,
+        'non_members': non_members,  # Pass non-members to the template
         'form': form
     })
 

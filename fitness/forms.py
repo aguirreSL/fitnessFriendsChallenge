@@ -95,22 +95,21 @@ class InvitationForm(forms.ModelForm):
         fields = ['invite_type', 'fitness_group', 'challenge', 'invitee', 'message']
 
     def __init__(self, *args, **kwargs):
+        group = kwargs.pop('group', None)
+        challenge = kwargs.pop('challenge', None)
         super().__init__(*args, **kwargs)
+
         self.fields['invitee'].queryset = User.objects.none()
         self.fields['challenge'].queryset = Challenge.objects.none()
-        self.fields['fitness_group'].queryset = FitnessGroup.objects.none()
 
-        if 'fitness_group' in self.data:
-            try:
-                fitness_group_id = int(self.data.get('fitness_group'))
-                self.fields['invitee'].queryset = User.objects.filter(fitness_groups__id=fitness_group_id)
-                self.fields['challenge'].queryset = Challenge.objects.filter(fitness_group_id=group_id)
-            except (ValueError, TypeError):
-                pass  # Handle empty data and invalid inputs
+        if group:
+            # Exclude users who are already members of the group
+            self.fields['invitee'].queryset = User.objects.exclude(id__in=group.members.all())
+            self.fields['challenge'].queryset = Challenge.objects.filter(fitness_group=group)
 
-        elif self.instance.pk:
+        if self.instance.pk:  # Edit case
             if self.instance.invite_type == InviteType.CHALLENGE_INVITE:
-                self.fields['invitee'].queryset = self.instance.group.members.all()
-                self.fields['challenge'].queryset = self.instance.group.challenge_set.all()
+                self.fields['invitee'].queryset = User.objects.exclude(id__in=self.instance.challenge.users.all())
+                self.fields['challenge'].queryset = Challenge.objects.filter(fitness_group=self.instance.fitness_group)
             elif self.instance.invite_type == InviteType.GROUP_INVITE:
-                self.fields['invitee'].queryset = self.instance.group.user_set.all()
+                self.fields['invitee'].queryset = User.objects.exclude(id__in=self.instance.fitness_group.members.all())

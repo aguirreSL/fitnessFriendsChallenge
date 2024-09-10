@@ -11,7 +11,7 @@
     <li>
         <!-- Clickable challenge name with type, links to edit page -->
         <a href="{% url 'edit_challenge' challenge.id %}">{{ challenge.name }} ({{ challenge.challenge_type }})</a> - 
-        Group: {{ challenge.group.name }}
+        Group: {{ challenge.fitness_group.name }}
 
         <!-- List all users already part of the challenge -->
         <br>Users:
@@ -21,7 +21,7 @@
             {% empty %}
                 <li>No users yet.</li>
             {% endfor %}
-        </ul>
+        </ul>       
 
         <!-- Form to invite a user to the challenge -->
         <form method="POST" action="{% url 'send_challenge_invitation' challenge.id %}">

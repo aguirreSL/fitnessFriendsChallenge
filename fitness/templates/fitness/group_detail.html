@@ -28,7 +28,7 @@
         {% for user in group.user_set.all %}
             {% if user not in group.members.all %}
                 <option value="{{ user.id }}">{{ user.username }}</option>
-            {% endfor %}
+            {% endif %}
         {% empty %}
             <option value="">No users available</option>
         {% endfor %}

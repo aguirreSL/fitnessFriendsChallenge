@@ -15,19 +15,16 @@ urlpatterns = [
     path('weight/', views.weight_tracker, name='weight_tracker'),
     path('profile/', profile, name='profile'),
     path('create_group/', views.create_group, name='create_group'),
-    path('groups/', group_list, name='group_list'),
-    #path('groups/<int:group_id>/invite/', views.send_invitation, name='send_invitation'),
+    path('fitness_groups/', group_list, name='group_list'),
     path('invitations/<int:invitation_id>/respond/<str:response>/', views.respond_invitation, name='respond_invitation'),
-    path('groups/<int:group_id>/', views.group_detail, name='group_detail'),
+    path('groups/<int:fitness_group_id>/', views.group_detail, name='group_detail'),
     path('challenges/', challenge_list, name='challenge_list'),
     path('challenges/create/', create_challenge, name='create_challenge'),
     path('challenges/edit/<int:pk>/', edit_challenge, name='edit_challenge'),
-    # path('challenges/<int:challenge_id>/invite/', views.send_invitation, name='send_invitation'),
-    path('groups/<int:group_id>/invite/', views.send_invitation, name='send_group_invitation'),
+    path('groups/<int:fitness_group_id>/invite/', views.send_invitation, name='send_group_invitation'),
     path('challenges/<int:challenge_id>/invite/', views.send_invitation, name='send_challenge_invitation'),
-    #
     path('invitations/', invitations_list, name='invitations_list'),
     path('create_invitation/', views.create_invitation, name='create_invitation'),
-    path('get_group_users/<int:group_id>/', views.get_group_users, name='get_group_users'),   
+    path('get_group_users/<int:fitness_group_id>/', views.get_group_users, name='get_group_users'),   
  
 ]

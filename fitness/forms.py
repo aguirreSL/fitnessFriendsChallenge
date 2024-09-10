@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import UserProfile, FitnessActivity, WeightEntry, Group, Challenge, LeaderboardEntry, Invitation #,DietaryLog
+from .models import UserProfile, FitnessActivity, WeightEntry, FitnessGroup, Challenge, LeaderboardEntry, Invitation #,DietaryLog
 from django.utils import timezone
 from datetime import datetime
 from django.forms.widgets import DateInput #DateInput to be able to use the little calendar :)
@@ -69,15 +69,15 @@ class WeightEntryForm(forms.ModelForm):
         }
 
 
-class GroupForm(forms.ModelForm):
+class FitnessGroupForm(forms.ModelForm):
     class Meta:
-        model = Group
+        model = FitnessGroup
         fields = ['name']
 
 class ChallengeForm(forms.ModelForm):
     class Meta:
         model = Challenge
-        fields = ['name', 'group', 'challenge_type', 'target_amount', 'start_date', 'end_date']
+        fields = ['name', 'fitness_group', 'challenge_type', 'target_amount', 'start_date', 'end_date']
         widgets = {
             'start_date': DateInput(attrs={'type': 'date'}),
             'end_date': DateInput(attrs={'type': 'date'}),
@@ -87,24 +87,24 @@ class ChallengeForm(forms.ModelForm):
         user = kwargs.pop('user', None)
         super(ChallengeForm, self).__init__(*args, **kwargs)
         if user:
-            self.fields['group'].queryset = user.fitness_groups.all()
+            self.fields['fitness_group'].queryset = user.fitness_groups.all()
 
 class InvitationForm(forms.ModelForm):
     class Meta:
         model = Invitation
-        fields = ['invite_type', 'group', 'challenge', 'invitee', 'message']
+        fields = ['invite_type', 'fitness_group', 'challenge', 'invitee', 'message']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['invitee'].queryset = User.objects.none()
         self.fields['challenge'].queryset = Challenge.objects.none()
-        self.fields['group'].queryset = Group.objects.none()
+        self.fields['fitness_group'].queryset = FitnessGroup.objects.none()
 
-        if 'group' in self.data:
+        if 'fitness_group' in self.data:
             try:
-                group_id = int(self.data.get('group'))
-                self.fields['invitee'].queryset = User.objects.filter(groups__id=group_id)
-                self.fields['challenge'].queryset = Challenge.objects.filter(group_id=group_id)
+                fitness_group_id = int(self.data.get('fitness_group'))
+                self.fields['invitee'].queryset = User.objects.filter(fitness_groups__id=fitness_group_id)
+                self.fields['challenge'].queryset = Challenge.objects.filter(fitness_group_id=group_id)
             except (ValueError, TypeError):
                 pass  # Handle empty data and invalid inputs
 

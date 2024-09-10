@@ -105,3 +105,7 @@ table th {
     background-color: #50b3a2;
     color: white;
 }
+
+.custom-thead th {
+    color: black; /* or another dark color */
+}

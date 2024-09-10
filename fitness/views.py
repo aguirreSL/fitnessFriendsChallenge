@@ -35,7 +35,7 @@ def register(request):
 
 def home(request):
     if not request.user.is_authenticated:
-       # Redirect to login page if user is not authenticated
+        # Redirect to login page if user is not authenticated
         return redirect('login')  # Make sure to replace 'login' with your actual login view name
 
     # Fetch all active challenges related to the user's fitness groups
@@ -53,20 +53,30 @@ def home(request):
         # Get all leaderboard entries for challenges related to user's groups
         leaderboard_entries = LeaderboardEntry.objects.filter(challenge__fitness_group__in=user_groups)
     
-    # Prepare leaderboard data
+    # Prepare leaderboard data with challenge information
     leaderboard_data = (
         leaderboard_entries
-        .values('user__username')
+        .select_related('challenge')  # Ensure challenge data is included
+        .values('user__username', 'challenge__name')  # Include challenge name in values
         .annotate(total_tss=Sum('progress'))
         .order_by('-total_tss')
     )
 
-    # Compute user's rank
-    leaderboard_list = list(leaderboard_data)  # Convert to list to handle indexing
-    user_rank = next((item for item in leaderboard_list if item['user__username'] == request.user.username), None)
-    user_position = None
-    if user_rank:
-        user_position = leaderboard_list.index(user_rank) + 1  # Rank starts from 1
+    # Compute user's rank in each challenge
+    user_positions = {}
+    for challenge in active_challenges:
+        challenge_entries = LeaderboardEntry.objects.filter(challenge=challenge)
+        challenge_data = (
+            challenge_entries
+            .select_related('challenge')
+            .values('user__username')
+            .annotate(total_tss=Sum('progress'))
+            .order_by('-total_tss')
+        )
+        leaderboard_list = list(challenge_data)
+        user_rank = next((item for item in leaderboard_list if item['user__username'] == request.user.username), None)
+        if user_rank:
+            user_positions[challenge.name] = leaderboard_list.index(user_rank) + 1  # Rank starts from 1
 
     # Fetch TSS logs for the last week
     one_week_ago = now() - timedelta(days=7)
@@ -79,11 +89,13 @@ def home(request):
     return render(request, 'fitness/home.html', {
         'active_challenges': active_challenges,
         'selected_challenge': selected_challenge,
-        'leaderboard_data': leaderboard_list,  # Pass the list to the template
-        'user_position': user_position,
+        'leaderboard_data': leaderboard_data,  # Pass the correct data to the template
+        'user_positions': user_positions,  # Pass user positions to the template
         'tss_dates': tss_dates,
         'tss_sums': tss_sums,
     })
+
+
 
 def add_activity(request):
     if request.method == 'POST':

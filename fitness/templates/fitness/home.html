@@ -28,7 +28,7 @@
     <div class="row mt-4">
         <div class="col-md-8 offset-md-2">
             <table class="table table-striped table-bordered">
-                <thead class="thead-dark">
+                <thead class="custom-thead">
                     <tr>
                         <th>Rank</th>
                         <th>User</th>
@@ -42,7 +42,7 @@
                         <td>{{ forloop.counter }}</td>
                         <td>{{ entry.user__username }}</td>
                         <td>{{ entry.total_tss }}</td>
-                        <td>{{ selected_challenge.name }}</td>
+                        <td>{{ entry.challenge__name }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -51,12 +51,19 @@
     </div>
 
     <div class="row mt-4">
-        <div class="col-md-8 offset-md-2 text-center">
-            {% if user_position %}
-                <h3>Your Position: {{ user_position }} @ {{ selected_challenge.name }}</h3>
-            {% else %}
-                <h3>You are not participating in this challenge.</h3>
-            {% endif %}
+        <div class="col-md-8 offset-md-2">
+            <h3 class="text-center">Your Positions</h3>
+            <ul class="list-group">
+                {% for challenge_name, position in user_positions.items %}
+                <li class="list-group-item">
+                    Your position @ {{ challenge_name }} = {{ position }}
+                </li>
+                {% empty %}
+                <li class="list-group-item">
+                    You are not participating in any challenges.
+                </li>
+                {% endfor %}
+            </ul>
         </div>
     </div>
 

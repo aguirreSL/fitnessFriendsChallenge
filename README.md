@@ -76,6 +76,6 @@ graph_models: Generates a graphical representation of your models.
 ``` 
 
 Below is the current UML diagram for the project:
-![UML](https://github.com/aguirreSL/fitnessFriendsChallenge/blob/main/Diagram.png)
+![UML](Diagram.png)
 
 

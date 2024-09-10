@@ -39,7 +39,7 @@ header {
 }
 
 .card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-1px);
 }
 
 .card-header {
@@ -82,13 +82,10 @@ table th {
     color: white;
 }
 
-/* Card Animation */
-.card {
-    transition: all 0.3s ease-in-out;
-}
-
-.card:hover {
-    transform: scale(1.05);
+/* Subtle Hover Effect for Table Rows */
+table tr:hover {
+    background-color: #f1f1f1;
+    transform: scale(1.02);
 }
 
 /* Button Styling */

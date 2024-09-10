@@ -1,42 +1,89 @@
 {% extends 'fitness/base.html' %}
 
 {% block content %}
-<h1>{{ group.name }} Details</h1>
+<div class="container mt-5">
+    <h1 class="text-center mb-4">{{ group.name }} Details</h1>
 
-<h2>Members</h2>
-<ul>
-    {% for member in group.members.all %}
-        <li>{{ member.username }}</li>
-    {% empty %}
-        <li>No members yet.</li>
-    {% endfor %}
-</ul>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="card-title">Members</h2>
+            <ul class="list-group">
+                {% for member in group.members.all %}
+                    <li class="list-group-item">{{ member.username }}</li>
+                {% empty %}
+                    <li class="list-group-item">No members yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 
-<h2>Challenges</h2>
-<ul>
-    {% for challenge in group.challenge_set.all %}
-        <li>{{ challenge.name }} ({{ challenge.challenge_type }})</li>
-    {% endfor %}
-</ul>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="card-title">Challenges</h2>
+            <ul class="list-group">
+                {% for challenge in group.challenge_set.all %}
+                    <li class="list-group-item">{{ challenge.name }} ({{ challenge.challenge_type }})</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 
-<h2>Send Group Invitation</h2>
-<form method="POST" action="{% url 'send_group_invitation' group.id %}">
-    {% csrf_token %}
-    <input type="hidden" name="invite_type" value="group">
-    
-    <label for="invitee">Invite user:</label>
-    <select name="invitee" id="invitee">
-        {% for user in non_members %}
-            <option value="{{ user.id }}">{{ user.username }}</option>
-        {% empty %}
-            <option value="">No users available</option>
-        {% endfor %}
-    </select>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="card-title">Send Group Invitation</h2>
+            <form method="POST" action="{% url 'send_group_invitation' group.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="invite_type" value="group">
+                
+                <div class="mb-3">
+                    <label for="invitee" class="form-label">Invite user:</label>
+                    <select name="invitee" id="invitee" class="form-select">
+                        {% for user in non_members %}
+                            <option value="{{ user.id }}">{{ user.username }}</option>
+                        {% empty %}
+                            <option value="">No users available</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-    <button type="submit">Send Invitation</button>
-</form>
+                <button type="submit" class="btn btn-custom btn-block">Send Invitation</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Section for Sending Challenge Invitations -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="card-title">Send Challenge Invitation</h2>
+            <form method="POST" action="{% url 'send_challenge_invitation' group.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="invite_type" value="challenge">
+                
+                <div class="mb-3">
+                    <label for="challenge" class="form-label">Select Challenge:</label>
+                    <select name="challenge" id="challenge" class="form-select">
+                        {% for challenge in group.challenge_set.all %}
+                            <option value="{{ challenge.id }}">{{ challenge.name }}</option>
+                        {% empty %}
+                            <option value="">No challenges available</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="invitee" class="form-label">Invite user:</label>
+                    <select name="invitee" id="invitee" class="form-select">
+                        {% for user in non_members %}
+                            <option value="{{ user.id }}">{{ user.username }}</option>
+                        {% empty %}
+                            <option value="">No users available</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-custom btn-block">Send Invitation</button>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
-
-
-
-

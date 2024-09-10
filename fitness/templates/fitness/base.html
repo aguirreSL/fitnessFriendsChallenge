@@ -46,24 +46,24 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'activity_list' %}">
-                                <i class="fas fa-list"></i> Activity List
+                                <i class="fas fa-list"></i> Activities
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'challenge_list' %}">
-                                <i class="fas fa-flag"></i> Manage Challenges
+                                <i class="fas fa-flag"></i> Challenges
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'weight_tracker' %}">
-                                <i class="fas fa-weight"></i> Weight Tracker
+                                <i class="fas fa-weight"></i> Weight
                             </a>
                         </li>
-                        <li class="nav-item">
+                        {% comment %} <li class="nav-item">
                             <a class="nav-link" href="{% url 'create_group' %}">
                                 <i class="fas fa-users"></i> Create Group
                             </a>
-                        </li>
+                        </li> {% endcomment %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'group_list' %}">
                                 <i class="fas fa-users-cog"></i> Groups

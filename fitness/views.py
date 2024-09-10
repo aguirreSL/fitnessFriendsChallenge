@@ -3,9 +3,10 @@ from .models import FitnessActivity, WeightEntry, UserProfile, FitnessGroup, Cha
 from .forms import UserRegisterForm, ActivityForm, WeightEntryForm, FitnessGroupForm, ChallengeForm, InvitationForm #,DietaryLogForm
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum #added to build home 
-from django.utils.timezone import now, timedelta #added to build home 
+from django.db.models import Sum, Q  #added to build home 
+from django.utils.timezone import now, timedelta, make_aware #added to build home 
 from django.contrib.auth.models import User  # Import the User model
+from datetime import datetime
 
 
 def activity_list(request):
@@ -32,69 +33,92 @@ def register(request):
         form = UserRegisterForm()
     return render(request, 'fitness/register.html', {'form': form})
 
-
 def home(request):
     if not request.user.is_authenticated:
-        # Redirect to login page if user is not authenticated
-        return redirect('login')  # Make sure to replace 'login' with your actual login view name
+        return redirect('login')
 
-    # Fetch all active challenges related to the user's fitness groups
-    user_groups = request.user.fitness_groups.all()  # Correct related_name
+    # Fetch user's groups and active challenges
+    user_groups = request.user.fitness_groups.all()
     active_challenges = Challenge.objects.filter(fitness_group__in=user_groups, end_date__gte=now())
 
-    # Handle selected challenge
     selected_challenge_id = request.GET.get('challenge')
-    if selected_challenge_id:
-        selected_challenge = get_object_or_404(Challenge, id=selected_challenge_id)
-        # Get all leaderboard entries for the selected challenge
-        leaderboard_entries = LeaderboardEntry.objects.filter(challenge=selected_challenge)
-    else:
-        selected_challenge = None
-        # Get all leaderboard entries for challenges related to user's groups
-        leaderboard_entries = LeaderboardEntry.objects.filter(challenge__fitness_group__in=user_groups)
-    
-    # Prepare leaderboard data with challenge information
-    leaderboard_data = (
-        leaderboard_entries
-        .select_related('challenge')  # Ensure challenge data is included
-        .values('user__username', 'challenge__name')  # Include challenge name in values
-        .annotate(total_tss=Sum('progress'))
-        .order_by('-total_tss')
-    )
+    tss_data = []
 
-    # Compute user's rank in each challenge
-    user_positions = {}
-    for challenge in active_challenges:
-        challenge_entries = LeaderboardEntry.objects.filter(challenge=challenge)
-        challenge_data = (
-            challenge_entries
-            .select_related('challenge')
+    if selected_challenge_id:
+        selected_challenge = Challenge.objects.get(id=selected_challenge_id)
+        start_date = make_aware(datetime.combine(selected_challenge.start_date, datetime.min.time()))
+        end_date = now()
+        
+        participants = selected_challenge.users.all()
+        activities = FitnessActivity.objects.filter(user__in=participants, date_time__range=[start_date, end_date])
+        
+        one_week_ago = now() - timedelta(days=7)
+        leaderboard_data = (
+            activities
             .values('user__username')
-            .annotate(total_tss=Sum('progress'))
+            .annotate(
+                total_tss=Sum('tss'),
+                week_tss=Sum('tss', filter=Q(date_time__gte=one_week_ago))
+            )
             .order_by('-total_tss')
         )
-        leaderboard_list = list(challenge_data)
-        user_rank = next((item for item in leaderboard_list if item['user__username'] == request.user.username), None)
-        if user_rank:
-            user_positions[challenge.name] = leaderboard_list.index(user_rank) + 1  # Rank starts from 1
+        
+        for entry in leaderboard_data:
+            entry['challenge_name'] = selected_challenge.name
+            entry['challenge_start_date'] = selected_challenge.start_date
+            entry['challenge_end_date'] = selected_challenge.end_date
 
-    # Fetch TSS logs for the last week
-    one_week_ago = now() - timedelta(days=7)
-    tss_logs = FitnessActivity.objects.filter(user=request.user, date_time__gte=one_week_ago).values('date_time').annotate(tss_sum=Sum('tss'))
+        # Fetch TSS data for the graph
+        for participant in participants:
+            tss_logs = FitnessActivity.objects.filter(user=participant, date_time__range=[start_date, end_date]).values('date_time').annotate(tss_sum=Sum('tss'))
+            tss_dates = [log['date_time'].strftime('%Y-%m-%d') for log in tss_logs]
+            tss_sums = [log['tss_sum'] for log in tss_logs]
+            tss_data.append({
+                'username': participant.username,
+                'dates': tss_dates,
+                'sums': tss_sums
+            })
+    else:
+        selected_challenge = None
+        leaderboard_data = []
+        one_week_ago = now() - timedelta(days=7)
+        
+        all_challenges = Challenge.objects.filter(fitness_group__in=user_groups)
+        for challenge in all_challenges:
+            start_date = make_aware(datetime.combine(challenge.start_date, datetime.min.time()))
+            end_date = make_aware(datetime.combine(challenge.end_date, datetime.min.time()))
+            activities = FitnessActivity.objects.filter(user=request.user, date_time__range=[start_date, end_date])
+            
+            challenge_leaderboard = (
+                activities
+                .values('user__username')
+                .annotate(
+                    total_tss=Sum('tss'),
+                    week_tss=Sum('tss', filter=Q(date_time__gte=one_week_ago))
+                )
+                .order_by('-total_tss')
+            )
+            
+            for entry in challenge_leaderboard:
+                entry['challenge_name'] = challenge.name
+                entry['challenge_start_date'] = challenge.start_date
+                entry['challenge_end_date'] = challenge.end_date
+                leaderboard_data.append(entry)
 
-    # Convert tss_logs to separate lists of dates and TSS sums
-    tss_dates = [log['date_time'].strftime('%Y-%m-%d') for log in tss_logs]
-    tss_sums = [log['tss_sum'] for log in tss_logs]
+    user_position = None
+    if selected_challenge:
+        for idx, entry in enumerate(leaderboard_data):
+            if entry['user__username'] == request.user.username:
+                user_position = idx + 1
+                break
 
     return render(request, 'fitness/home.html', {
         'active_challenges': active_challenges,
         'selected_challenge': selected_challenge,
-        'leaderboard_data': leaderboard_data,  # Pass the correct data to the template
-        'user_positions': user_positions,  # Pass user positions to the template
-        'tss_dates': tss_dates,
-        'tss_sums': tss_sums,
+        'leaderboard_data': leaderboard_data,
+        'user_position': user_position,
+        'tss_data': tss_data,
     })
-
 
 
 def add_activity(request):

@@ -32,8 +32,11 @@
                     <tr>
                         <th>Rank</th>
                         <th>User</th>
-                        <th>TSS</th>
+                        <th>Total TSS</th>
+                        <th>Week TSS</th>
                         <th>Challenge</th>
+                        <th>Begin Date</th>
+                        <th>End Date</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -42,7 +45,10 @@
                         <td>{{ forloop.counter }}</td>
                         <td>{{ entry.user__username }}</td>
                         <td>{{ entry.total_tss }}</td>
-                        <td>{{ entry.challenge__name }}</td>
+                        <td>{{ entry.week_tss }}</td>
+                        <td>{{ entry.challenge_name }}</td>
+                        <td>{{ entry.challenge_start_date }}</td>
+                        <td>{{ entry.challenge_end_date }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -52,53 +58,50 @@
 
     <div class="row mt-4">
         <div class="col-md-8 offset-md-2">
-            <h3 class="text-center">Your Positions</h3>
-            <ul class="list-group">
-                {% for challenge_name, position in user_positions.items %}
-                <li class="list-group-item">
-                    Your position @ {{ challenge_name }} = {{ position }}
-                </li>
-                {% empty %}
-                <li class="list-group-item">
-                    You are not participating in any challenges.
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-
-    <div class="row mt-4">
-        <div class="col-md-8 offset-md-2">
-            <h2 class="text-center">Your TSS for the Last Week</h2>
-            <canvas id="tssChart"></canvas>
+            <h2 class="text-center">Your TSS </h2>
+            <canvas id="tssChart" width="400" height="200"></canvas>
+            <!-- Debug statements -->
+            {% comment %} <p>TSS Data: {{ tss_data }}</p> {% endcomment %}
         </div>
     </div>
 </div>
 
 <script>
     var ctx = document.getElementById('tssChart').getContext('2d');
+    var tssData = {{ tss_data|safe }};
+    console.log("TSS Data:", tssData);
+
+    var colors = [
+    'rgba(75, 192, 192, 1)',
+    'rgba(255, 99, 132, 1)',
+    'rgba(54, 162, 235, 1)',
+    'rgba(255, 206, 86, 1)',
+    'rgba(153, 102, 255, 1)',
+    'rgba(255, 159, 64, 1)'
+    ];
+    var datasets = tssData.map(function(participant, index) {
+        return {
+            label: participant.username,
+            data: participant.sums,
+            borderColor: colors[index % colors.length],
+            borderWidth: 2,
+            fill: false
+        };
+    });
+
     var tssChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: {{ tss_dates|safe }},
-            datasets: [{
-                label: 'TSS',
-                data: {{ tss_sums|safe }},
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 2,
-                fill: false
-            }]
+            labels: tssData.length > 0 ? tssData[0].dates : [],
+            datasets: datasets
         },
         options: {
             scales: {
-                x: {
-                    type: 'time',
-                    time: {
-                        unit: 'day'
-                    }
-                },
                 y: {
-                    beginAtZero: true
+                    title: {
+                        display: true,
+                        text: 'TSS'
+                    }
                 }
             }
         }

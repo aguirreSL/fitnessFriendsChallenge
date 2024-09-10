@@ -55,58 +55,59 @@
             </table>
         </div>
     </div>
-
+    {% comment %} <p>var: {{ selected }}</p> {% endcomment %}
+    {% comment %} {% if leaderboard_data.challenge_name == "" %} {% endcomment %}
     <div class="row mt-4">
         <div class="col-md-8 offset-md-2">
-            <h2 class="text-center">Your TSS </h2>
+            <h2 class="text-center">Your TSS</h2>
             <canvas id="tssChart" width="400" height="200"></canvas>
             <!-- Debug statements -->
             {% comment %} <p>TSS Data: {{ tss_data }}</p> {% endcomment %}
         </div>
     </div>
-</div>
 
-<script>
-    var ctx = document.getElementById('tssChart').getContext('2d');
-    var tssData = {{ tss_data|safe }};
-    console.log("TSS Data:", tssData);
+    <script>
+        var ctx = document.getElementById('tssChart').getContext('2d');
+        var tssData = {{ tss_data|safe }};
+        console.log("TSS Data:", tssData);
 
-    var colors = [
-    'rgba(75, 192, 192, 1)',
-    'rgba(255, 99, 132, 1)',
-    'rgba(54, 162, 235, 1)',
-    'rgba(255, 206, 86, 1)',
-    'rgba(153, 102, 255, 1)',
-    'rgba(255, 159, 64, 1)'
-    ];
-    var datasets = tssData.map(function(participant, index) {
-        return {
-            label: participant.username,
-            data: participant.sums,
-            borderColor: colors[index % colors.length],
-            borderWidth: 2,
-            fill: false
-        };
-    });
+        var colors = [
+            'rgba(75, 192, 192, 1)',
+            'rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(153, 102, 255, 1)',
+            'rgba(255, 159, 64, 1)'
+        ];
+        var datasets = tssData.map(function(participant, index) {
+            return {
+                label: participant.username,
+                data: participant.sums,
+                borderColor: colors[index % colors.length],
+                borderWidth: 2,
+                fill: false
+            };
+        });
 
-    var tssChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: tssData.length > 0 ? tssData[0].dates : [],
-            datasets: datasets
-        },
-        options: {
-            scales: {
-                y: {
-                    title: {
-                        display: true,
-                        text: 'TSS'
+        var tssChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: tssData.length > 0 ? tssData[0].dates : [],
+                datasets: datasets
+            },
+            options: {
+                scales: {
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'TSS'
+                        }
                     }
                 }
             }
-        }
-    });
-</script>
+        });
+    </script>
+{% comment %} {% endif %} {% endcomment %}
 
 {% else %}
 <p>Please <a href="{% url 'login' %}">log in</a> to view your fitness data.</p>

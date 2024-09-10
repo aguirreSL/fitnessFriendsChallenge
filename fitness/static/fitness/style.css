@@ -1,107 +1,53 @@
+/* General Body Styling */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f8f9fa;
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f7fa;
 }
 
+/* Header Styling */
 header {
-    background: linear-gradient(135deg, #c904f5, #50b3a2);
+    background: linear-gradient(135deg, #6e45e2, #88d3ce);
     color: white;
-    padding-top: 30px;
-    min-height: 70px;
-    border-bottom: #e8491d 3px solid;
 }
 
-header a {
-    color: #ffffff;
-    text-decoration: none;
-    text-transform: uppercase;
-    font-size: 16px;
-}
-
-header nav a {
-    margin-right: 10px;
-    text-decoration: none;
-    color: white; /* Change this to #f3e5ff or #e0f7f5 if you prefer */
-}
-header nav a:hover {
-    text-decoration: underline;
-    /* opacity: 0.7; */
-}
-
-header ul {
-    padding: 0;
-    margin: 0;
-    list-style: none;
-    overflow: hidden;
-}
-
-header li {
-    float: left;
-    display: inline;
-}
-
-header nav {
-    float: right;
-    margin-top: 10px;
-}
-
-header a:hover {
-    opacity: 0.7;
-}
-
-header h1 {
-    margin: 0;
-}
-
-header h1 a:hover {
+.navbar-brand {
+    font-size: 24px;
+    font-weight: bold;
     color: #fff;
-    text-decoration: none;
 }
 
-.footer {
-    padding: 20px;
-    margin-top: 20px;
-    color: #ffffff;
-    background: radial-gradient(circle, #50b3a2, #c904f5);
-    text-align: center;
-    font-size: 20px; /* Increase the font size */
-    font-weight: bold; /* Make the font bold */
+.navbar-nav .nav-link {
+    color: #fff;
+    font-size: 16px;
+    text-transform: uppercase;
+    transition: color 0.3s ease;
 }
 
-.container {
-    width: 80%;
-    margin-top: 20px;
-    /* margin: auto; */
-    overflow: hidden;
+.navbar-nav .nav-link:hover {
+    color: #f1f1f1;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-table, th, td {
-    border: 1px solid #dee2e6;
-}
-th, td {
-    padding: 8px;
-    text-align: center;
-}
-th {
-    background-color: #007bff;
-    color: white;
+.navbar-toggler-icon {
+    background-color: #fff;
 }
 
+/* Card Styling */
 .card {
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
 }
 
 .card-header {
-    background: linear-gradient(135deg, #c904f5, #50b3a2);
+    background: linear-gradient(135deg, #6e45e2, #88d3ce);
     color: white;
-    padding: 20px;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
+    padding: 15px;
+    font-size: 18px;
+    border-radius: 10px 10px 0 0;
 }
 
 .card-body {
@@ -109,7 +55,53 @@ th {
     background-color: #f8f9fa;
 }
 
-.card-body p {
-    font-size: 18px;
-    margin-bottom: 10px;
+/* Footer Styling */
+.footer {
+    background: linear-gradient(135deg, #88d3ce, #6e45e2);
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table th, table td {
+    padding: 12px;
+    text-align: center;
+    border: 1px solid #dee2e6;
+}
+
+table th {
+    background-color: #6e45e2;
+    color: white;
+}
+
+/* Card Animation */
+.card {
+    transition: all 0.3s ease-in-out;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+/* Button Styling */
+.btn {
+    background-color: #6e45e2;
+    color: white;
+    border-radius: 50px;
+    padding: 10px 20px;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #50b3a2;
+    color: white;
 }

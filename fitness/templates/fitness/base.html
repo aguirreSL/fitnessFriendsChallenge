@@ -1,45 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
-    
-    <head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <title>{% block title %}Fitness Tracker{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'fitness/style.css' %}">
-    <!-- Add any additional CSS or JS here -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header>
-        <nav>
-            {% if user.is_authenticated %}
-            <a href="{% url 'home' %}">Home | </a>
-            <a href="{% url 'profile' %}">Profile | </a>
-            <a href="{% url 'activity_list' %}">Activity List | </a>
-            <a href="{% url 'challenge_list' %}">Manage Challenges |</a>
-            {% comment %} <a href="{% url 'diet_log' %}">Diet Log | </a> {% endcomment %}
-            <a href="{% url 'weight_tracker' %}">Weight Tracker | </a>
-            <a href="{% url 'create_group' %}">Create Group | </a>
-            <a href="{% url 'group_list' %}">Groups | </a>            
-            <a href="{% url 'logout' %}">Logout</a>
-            {% else %}
-                <a href="{% url 'register' %}">Register | </a>
-                <a href="{% url 'login' %}">Login</a>
-            {% endif %}
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg" style="background-color: transparent;">
+            <div class="container-fluid">
+                <!-- Home button on the left with icon -->
+                <a class="navbar-brand" href="{% url 'home' %}">
+                    <i class="fas fa-home"></i> Home
+                </a>
+        
+                <!-- Toggler for mobile view -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="fas fa-bars"></i> <!-- <i class="fas fa-bars"></i> (this is the bootstrap version)-->
+                </button>
+        
+                <!-- Navbar content (search in the middle, links on the right) -->
+                <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
+                    <!-- Search bar in the center -->
+                    <form class="d-flex mx-auto">
+                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                        <button class="btn btn-outline-success" type="submit">Search</button>
+                    </form>
+        
+                    <!-- Right-aligned links -->
+                    <ul class="navbar-nav ms-auto">
+                        {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'profile' %}">
+                                <i class="fas fa-user"></i> {{ user.username }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'activity_list' %}">
+                                <i class="fas fa-list"></i> Activity List
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'challenge_list' %}">
+                                <i class="fas fa-flag"></i> Manage Challenges
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'weight_tracker' %}">
+                                <i class="fas fa-weight"></i> Weight Tracker
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'create_group' %}">
+                                <i class="fas fa-users"></i> Create Group
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'group_list' %}">
+                                <i class="fas fa-users-cog"></i> Groups
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">
+                                <i class="fas fa-user-plus"></i> Register
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
         </nav>
+        
     </header>
 
     <div class="container">
         {% block content %}
-        <!-- Content will be injected here from other templates -->
+        <!-- Page content goes here -->
         {% endblock %}
     </div>
 
     <footer>
-        <p class="footer">Fitness Tracker</p>
+        <p class="footer">Fitness Tracker &copy; 2024</p>
     </footer>
+
+    <!-- Bootstrap JS (for navbar toggle functionality) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
+   

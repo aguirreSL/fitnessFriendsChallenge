@@ -1,45 +1,48 @@
 {% extends 'fitness/base.html' %}
+{% load custom_filters %}
+{% load static %}
 {% block content %}
-    <h1>Activity List</h1>
-    <ul>
-    {% for activity in activities %}
-        <li>{{ activity.activity_type }}: {{ activity.duration }}, Calories: {{activity.calories_burned}}, Date: {{activity.date_time}} , TSS: {{ activity.tss }}</li>
-    {% empty %}
-        <li>No activities recorded.</li>
-    {% endfor %}
-    </ul>
-    <a href="{% url 'add_activity' %}">Add Activity</a>
-    
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Send Invitation</button>
-    </form>
-    
-    <script>
-        document.getElementById('id_group').addEventListener('change', function () {
-            var groupId = this.value;
-            fetch('/get_group_users/' + groupId + '/')
-                .then(response => response.json())
-                .then(data => {
-                    var inviteeSelect = document.getElementById('id_invitee');
-                    inviteeSelect.innerHTML = '';
-                    data.users.forEach(function (user) {
-                        var option = document.createElement('option');
-                        option.value = user.id;
-                        option.text = user.username;
-                        inviteeSelect.appendChild(option);
-                    });
-    
-                    var challengeSelect = document.getElementById('id_challenge');
-                    challengeSelect.innerHTML = '';
-                    data.challenges.forEach(function (challenge) {
-                        var option = document.createElement('option');
-                        option.value = challenge.id;
-                        option.text = challenge.name;
-                        challengeSelect.appendChild(option);
-                    });
-                });
-        });
-    </script>
+    <link rel="stylesheet" href="{% static 'fitness/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'fitness/css/style.css' %}">
+    <div class="container mt-5 mb-5">
+        <h1 class="text-center">Activity List</h1>
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <table class="table table-striped">
+                            <thead class="custom-thead">
+                                <tr>
+                                    <th scope="col" onclick="sortTable(0)">Activity Type</th>
+                                    <th scope="col" onclick="sortTable(1)">Duration</th>
+                                    <th scope="col" onclick="sortTable(2)">Calories</th>
+                                    <th scope="col" onclick="sortTable(3)">Date</th>
+                                    <th scope="col" onclick="sortTable(4)">TSS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for activity in activities %}
+                                    <tr>
+                                        <td>{{ activity.activity_type }}</td>
+                                        <td>{{ activity.duration }}</td>
+                                        <td>{{ activity.calories_burned }}</td>
+                                        <td>{{ activity.date_time }}</td>
+                                        <td>{{ activity.tss }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">No activities recorded.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <div class="text-center mt-3">
+                            <a href="{% url 'add_activity' %}" class="btn btn-primary">Add Activity</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'fitness/js/sort_table.js' %}"></script>
 {% endblock %}

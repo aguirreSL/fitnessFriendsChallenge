@@ -1,9 +1,67 @@
 {% extends 'fitness/base.html' %}
+{% load custom_filters %}
+{% load static %}
 {% block content %}
-    <h2>Register</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Register</button>
-    </form>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-header text-center">
+                        <h2>Register</h2>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="id_username">Username</label>
+                                {{ form.username|add_class:"form-control" }}
+                                <small class="form-text text-muted">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="id_email">Email</label>
+                                {{ form.email|add_class:"form-control" }}
+                            </div>
+                            <div class="form-group">
+                                <label for="id_password1">Password</label>
+                                {{ form.password1|add_class:"form-control" }}
+                                <small class="form-text text-muted">
+                                    Your password must contain at least 8 characters, can't be too similar to your other personal information, can't be a commonly used password, and can't be entirely numeric.
+                                </small>
+                            </div>
+                            <div class="form-group">
+                                <label for="id_password2">Password confirmation</label>
+                                {{ form.password2|add_class:"form-control" }}
+                                <small class="form-text text-muted">Enter the same password as before, for verification.</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="id_date_of_birth">Date of birth</label>
+                                {{ form.date_of_birth|add_class:"form-control" }}
+                                <small class="form-text text-muted">Required. Format: YYYY-MM-DD</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="id_height">Height</label>
+                                {{ form.height|add_class:"form-control" }}
+                                <small class="form-text text-muted">Height in centimeters</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="id_weight">Weight</label>
+                                {{ form.weight|add_class:"form-control" }}
+                                <small class="form-text text-muted">Weight in kilograms</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="id_fitness_level">Fitness level</label>
+                                {{ form.fitness_level|add_class:"form-control" }}
+                                <small class="form-text text-muted">Fitness level from 1 to 10</small>
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary">Register</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

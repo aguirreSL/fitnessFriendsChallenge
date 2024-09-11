@@ -32,7 +32,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 
-ALLOWED_HOSTS = ['ffchub.herokuapp.com']
+ALLOWED_HOSTS = ['ffchub.herokuapp.com','ffchub-7f3e91659c6b.herokuapp.com']
 
 
 # Application definition

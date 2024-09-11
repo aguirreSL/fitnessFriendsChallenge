@@ -26,14 +26,31 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-SECRET_KEY = os.getenv('SECRET_KEY')
-
-# SECURITY WARNING: don't run with debug turned on in production!
+# SECRET_KEY and DEBUG settings
+SECRET_KEY = os.getenv('SECRET_KEY', 'local_secret_key')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
+# Allow all hosts in development, restrict for production
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
-ALLOWED_HOSTS = ['ffchub.herokuapp.com','ffchub-7f3e91659c6b.herokuapp.com']
+# Database
+# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+if not DEBUG:
+    ALLOWED_HOSTS += ['ffchub.herokuapp.com', 'ffchub-7f3e91659c6b.herokuapp.com']
+
+# DATABASES Configuration: SQLite for local, PostgreSQL for Heroku/Supabase
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+else:
+    DATABASES = {
+        'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+    }
 
 # Application definition
 
@@ -79,21 +96,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'health_tracker.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-# Update the database configuration with the DATABASE_URL environment variable if it exists
-DATABASE_URL = os.getenv('DATABASE_URL')
-if DATABASE_URL:
-    DATABASES['default'] = dj_database_url.config(default=DATABASE_URL)
 
 # Supabase configuration
 SUPABASE_URL = os.getenv('SUPABASE_URL')

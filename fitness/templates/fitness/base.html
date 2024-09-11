@@ -11,21 +11,24 @@
     <title>{% block title %}Fitness Tracker{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'fitness/css/style.css' %}">
+    <link rel="icon" href="{% static 'fitness/favicon.ico' %}" type="image/x-icon">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="apple-touch-icon" href="{% static 'tlogo.png' %}">
 </head>
 <body>
     <header>
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg" style="background-color: transparent;">
             <div class="container-fluid">
-                <!-- Home button on the left with icon -->
+                <!-- Logo and Home button on the left -->
                 <a class="navbar-brand" href="{% url 'home' %}">
-                    <i class="fas fa-home"></i> Home
+                    <img src="{% static 'fitness/tlogo.png' %}" alt="Logo" style="height: 40px; margin-right: 10px;">
+                    FFC Home
                 </a>
         
                 <!-- Toggler for mobile view -->
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <i class="fas fa-bars"></i> <!-- <i class="fas fa-bars"></i> (this is the bootstrap version)-->
+                    <i class="fas fa-bars"></i>
                 </button>
         
                 <!-- Navbar content (search in the middle, links on the right) -->
@@ -90,7 +93,6 @@
                 </div>
             </div>
         </nav>
-        
     </header>
 
     <div class="container">
@@ -100,12 +102,10 @@
     </div>
 
     <footer>
-        <p class="footer">Fitness Tracker &copy; 2024</p>
+        <p class="footer">Fitness Tracker © 2024</p>
     </footer>
 
     <!-- Bootstrap JS (for navbar toggle functionality) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>
-   

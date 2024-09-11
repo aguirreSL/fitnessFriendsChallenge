@@ -14,7 +14,7 @@
                 {% csrf_token %}
                 <label for="challenge" class="mr-2">Select Challenge:</label>
                 <select name="challenge" id="challenge" class="form-control" onchange="this.form.submit();">
-                    <option value="">All Challenges</option>
+                    <option value="">All Challenges Im Part Of</option>
                     {% for challenge in active_challenges %}
                     <option value="{{ challenge.id }}" {% if challenge == selected_challenge %}selected{% endif %}>
                         {{ challenge.name }}

@@ -43,21 +43,57 @@ source env/bin/activate # On Windows use env\Scripts\activate
 4. **Install Dependencies**:
 ``` 
 pip install -r requirements.txt
-
 ``` 
 
-5. **Initialize the Database**:
+5. **Generate a Secret Key**:
+Run the following command to generate a new secret key:
+``` 
+python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
+``` 
+6. **Create the `.env` File**:
+This project uses environment variables to store sensitive information. 
+You need to create a `.env` file. In the root directory of the project, create a file named .env.
+
+- **macOS/Linux**: Run the following command to create the `.env` file:
+  
+  ``` bash
+  touch .env
+  ```
+  - **Windows**:  Use the following command in your terminal:
+```
+  echo. > .env
+```
+
+Copy the generated secret key and paste it into the SECRET_KEY field in the .env file like this:
+
+``` 
+SECRET_KEY=hfg93jgh$0f3o3m=f*al50!exnp^$f$qlr^0as9+md+v
+``` 
+
+A complete view of .env can be
+``` 
+SECRET_KEY=your_generated_secret_key
+DEBUG=True  # Set to False in production (deployed)
+DATABASE_URL=your_database_url  # Add your database URL if using a remote database
+SUPABASE_URL=your_supabase_url  # Supabase used in the project
+SUPABASE_KEY=your_supabase_key  # Supabase key 
+``` 
+
+Important: Never share your .env file publicly, especially when deploying to production
+
+
+7. **Initialize the Database**:
 ``` 
 python manage.py makemigrations
 python manage.py migrate
 ``` 
 
-6. **Create a superuser (optional but recommended for admin access)**:
+8. **Create a superuser (optional but recommended for admin access)**:
 ```
 python manage.py createsuperuser
 ```
 
-7. **Run the Server**:
+9. **Run the Server**:
 ``` 
 python manage.py runserver
 ```

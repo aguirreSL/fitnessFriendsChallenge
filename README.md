@@ -34,10 +34,15 @@ Welcome to the **Fitness Friends Challenge**, our intuitive and dynamic web appl
 cd fitnessFriendsChallenge
 ```
 
-3. **Set Up a Virtual Environment**:
+3.1 **Set Up a Virtual Environment Mac**:
 ``` 
 python -m venv env
-source env/bin/activate # On Windows use env\Scripts\activate
+source env/bin/activate
+``` 
+3.2 **Set Up a Virtual Environment Misnows**:
+``` 
+python -m venv env
+env\Scripts\activate
 ``` 
 
 4. **Install Dependencies**:

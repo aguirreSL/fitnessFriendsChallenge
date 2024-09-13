@@ -28,7 +28,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECRET_KEY and DEBUG settings
 SECRET_KEY = os.getenv('SECRET_KEY', 'local_secret_key')
-DEBUG = os.getenv('DEBUG')
+# DEBUG = os.getenv('DEBUG')
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 't')
+
 
 # Allow all hosts in development, restrict for production
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']

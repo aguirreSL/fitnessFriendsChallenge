@@ -37,7 +37,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 if not DEBUG:
-    ALLOWED_HOSTS += ['*']
+    ALLOWED_HOSTS += ['ffc-tguz.onrender.com']
 
 # DATABASES Configuration: SQLite for local, PostgreSQL for Heroku/Supabase
 if DEBUG:

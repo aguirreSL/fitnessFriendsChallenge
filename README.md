@@ -80,8 +80,6 @@ A complete view of .env can be
 SECRET_KEY=your_generated_secret_key
 DEBUG=True  # Set to False in production (deployed)
 DATABASE_URL=your_database_url  # Add your database URL if using a remote database
-SUPABASE_URL=your_supabase_url  # Supabase used in the project
-SUPABASE_KEY=your_supabase_key  # Supabase key 
 ``` 
 
 Important: Never share your .env file publicly, especially when deploying to production

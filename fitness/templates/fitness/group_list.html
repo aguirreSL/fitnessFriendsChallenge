@@ -2,49 +2,63 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="text-center mb-4">Groups I Am Part Of</h2>
-    <div class="card mb-4">
-        <div class="card-body">
-            <ul class="list-group">
-                {% for group in user_groups %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <a href="{% url 'group_detail' group.id %}">{{ group.name }}</a>
-                        <span class="badge bg-primary rounded-pill">Member</span>
-                    </li>
-                {% empty %}
-                    <li class="list-group-item">No groups found.</li>
-                {% endfor %}
-            </ul>
+    <div class="row">
+        <!-- My Groups Column -->
+        <div class="col-md-6 mb-4">
+            <h2 class="text-center mb-4">My Groups</h2>
+            <div class="card">
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for group in user_groups %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <a href="{% url 'group_detail' group.id %}" class="text-decoration-none">{{ group.name }}</a>
+                                <span class="badge bg-primary rounded-pill">Member</span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item">No groups found.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Active Groups Column -->
+        <div class="col-md-6 mb-4">
+            <h2 class="text-center mb-4">Active Groups</h2>
+            <div class="card">
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for group in all_groups %}
+                            {% if group not in user_groups %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <a href="{% url 'group_detail' group.id %}" class="text-decoration-none">{{ group.name }}</a>
+                                    <span class="badge bg-secondary rounded-pill">Join</span>
+                                </li>
+                            {% endif %}
+                        {% empty %}
+                            <li class="list-group-item">No groups found.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
-    <h3 class="text-center mb-4">All Remaining Groups</h3>
-    <div class="card mb-4">
-        <div class="card-body">
-            <ul class="list-group">
-                {% for group in all_groups %}
-                    {% if group not in user_groups %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <a href="{% url 'group_detail' group.id %}">{{ group.name }}</a>
-                            <span class="badge bg-secondary rounded-pill">Join</span>
-                        </li>
-                    {% endif %}
-                {% empty %}
-                    <li class="list-group-item">No groups found.</li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-
-    <h2 class="text-center mb-4">Create a new Fitness Friends Group</h2>
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-custom btn-block">Create Group</button>
-            </form>
+    <!-- Create New Group Section -->
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h2 class="text-center mb-4">Create a new Fitness Friends Group</h2>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-custom btn-block w-100">Create Group</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
 {% endblock %}

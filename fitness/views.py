@@ -7,7 +7,9 @@ from django.db.models import Sum, Q  #added to build home
 from django.utils.timezone import now, timedelta, make_aware #added to build home 
 from django.contrib.auth.models import User  # Import the User model
 from datetime import datetime
+import logging
 
+logger = logging.getLogger(__name__)
 
 def activity_list(request):
     activities = FitnessActivity.objects.filter(user=request.user)
@@ -45,39 +47,45 @@ def home(request):
     tss_data = []
 
     if selected_challenge_id:
-        selected_challenge = Challenge.objects.get(id=selected_challenge_id)
-        start_date = make_aware(datetime.combine(selected_challenge.start_date, datetime.min.time()))
-        end_date = now()
-        
-        participants = selected_challenge.users.all()
-        activities = FitnessActivity.objects.filter(user__in=participants, date_time__range=[start_date, end_date])
-        
-        one_week_ago = now() - timedelta(days=7)
-        leaderboard_data = (
-            activities
-            .values('user__username')
-            .annotate(
-                total_tss=Sum('tss'),
-                week_tss=Sum('tss', filter=Q(date_time__gte=one_week_ago))
+        try:
+            selected_challenge = Challenge.objects.get(id=selected_challenge_id)
+        except Challenge.DoesNotExist:
+            logger.error(f'Challenge with id {selected_challenge_id} does not exist.')
+            selected_challenge = None
+            leaderboard_data = []
+        else:
+            start_date = make_aware(datetime.combine(selected_challenge.start_date, datetime.min.time()))
+            end_date = now()
+            
+            participants = selected_challenge.users.all()
+            activities = FitnessActivity.objects.filter(user__in=participants, date_time__range=[start_date, end_date])
+            
+            one_week_ago = now() - timedelta(days=7)
+            leaderboard_data = (
+                activities
+                .values('user__username')
+                .annotate(
+                    total_tss=Sum('tss'),
+                    week_tss=Sum('tss', filter=Q(date_time__gte=one_week_ago))
+                )
+                .order_by('-total_tss')
             )
-            .order_by('-total_tss')
-        )
-        
-        for entry in leaderboard_data:
-            entry['challenge_name'] = selected_challenge.name
-            entry['challenge_start_date'] = selected_challenge.start_date
-            entry['challenge_end_date'] = selected_challenge.end_date
+            
+            for entry in leaderboard_data:
+                entry['challenge_name'] = selected_challenge.name
+                entry['challenge_start_date'] = selected_challenge.start_date
+                entry['challenge_end_date'] = selected_challenge.end_date
 
-        # Fetch TSS data for the graph
-        for participant in participants:
-            tss_logs = FitnessActivity.objects.filter(user=participant, date_time__range=[start_date, end_date]).values('date_time').annotate(tss_sum=Sum('tss'))
-            tss_dates = [log['date_time'].strftime('%Y-%m-%d') for log in tss_logs]
-            tss_sums = [log['tss_sum'] for log in tss_logs]
-            tss_data.append({
-                'username': participant.username,
-                'dates': tss_dates,
-                'sums': tss_sums
-            })
+            # Fetch TSS data for the graph
+            for participant in participants:
+                tss_logs = FitnessActivity.objects.filter(user=participant, date_time__range=[start_date, end_date]).values('date_time').annotate(tss_sum=Sum('tss'))
+                tss_dates = [log['date_time'].strftime('%Y-%m-%d') for log in tss_logs]
+                tss_sums = [log['tss_sum'] for log in tss_logs]
+                tss_data.append({
+                    'username': participant.username,
+                    'dates': tss_dates,
+                    'sums': tss_sums
+                })
     else:
         selected_challenge = None
         leaderboard_data = []

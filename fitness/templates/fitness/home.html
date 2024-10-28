@@ -73,8 +73,13 @@
     <div class="row mt-4">
         <div class="col-md-8 offset-md-2">
             <h2 class="text-center">Your TSS</h2>
-            <canvas id="tssChart" width="400" height="200"></canvas>
-            <!-- Debug statements -->
+            {% if tss_data %}
+                <canvas id="tssChart" width="400" height="200"></canvas>
+            {% else %}
+                <div class="alert alert-info text-center">
+                    No TSS data available to display.
+                </div>
+            {% endif %}<!-- Debug statements -->
             {% comment %} <p>TSS Data: {{ tss_data }}</p> {% endcomment %}
         </div>
     </div>

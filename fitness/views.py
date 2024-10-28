@@ -59,33 +59,37 @@ def home(request):
             
             participants = selected_challenge.users.all()
             activities = FitnessActivity.objects.filter(user__in=participants, date_time__range=[start_date, end_date])
-            
-            one_week_ago = now() - timedelta(days=7)
-            leaderboard_data = (
-                activities
-                .values('user__username')
-                .annotate(
-                    total_tss=Sum('tss'),
-                    week_tss=Sum('tss', filter=Q(date_time__gte=one_week_ago))
-                )
-                .order_by('-total_tss')
-            )
-            
-            for entry in leaderboard_data:
-                entry['challenge_name'] = selected_challenge.name
-                entry['challenge_start_date'] = selected_challenge.start_date
-                entry['challenge_end_date'] = selected_challenge.end_date
 
-            # Fetch TSS data for the graph
-            for participant in participants:
-                tss_logs = FitnessActivity.objects.filter(user=participant, date_time__range=[start_date, end_date]).values('date_time').annotate(tss_sum=Sum('tss'))
-                tss_dates = [log['date_time'].strftime('%Y-%m-%d') for log in tss_logs]
-                tss_sums = [log['tss_sum'] for log in tss_logs]
-                tss_data.append({
-                    'username': participant.username,
-                    'dates': tss_dates,
-                    'sums': tss_sums
-                })
+            if participants.exists():
+                one_week_ago = now() - timedelta(days=7)
+                leaderboard_data = (
+                    activities
+                    .values('user__username')
+                    .annotate(
+                        total_tss=Sum('tss'),
+                        week_tss=Sum('tss', filter=Q(date_time__gte=one_week_ago))
+                    )
+                    .order_by('-total_tss')
+                )
+                
+                for entry in leaderboard_data:
+                    entry['challenge_name'] = selected_challenge.name
+                    entry['challenge_start_date'] = selected_challenge.start_date
+                    entry['challenge_end_date'] = selected_challenge.end_date
+
+                # Fetch TSS data for the graph
+                for participant in participants:
+                    tss_logs = FitnessActivity.objects.filter(user=participant, date_time__range=[start_date, end_date]).values('date_time').annotate(tss_sum=Sum('tss'))
+                    tss_dates = [log['date_time'].strftime('%Y-%m-%d') for log in tss_logs]
+                    tss_sums = [log['tss_sum'] for log in tss_logs]
+                    tss_data.append({
+                        'username': participant.username,
+                        'dates': tss_dates,
+                        'sums': tss_sums
+                    })
+            else:
+                leaderboard_data = []
+
     else:
         selected_challenge = None
         leaderboard_data = []
@@ -97,21 +101,22 @@ def home(request):
             end_date = make_aware(datetime.combine(challenge.end_date, datetime.min.time()))
             activities = FitnessActivity.objects.filter(user=request.user, date_time__range=[start_date, end_date])
             
-            challenge_leaderboard = (
-                activities
-                .values('user__username')
-                .annotate(
-                    total_tss=Sum('tss'),
-                    week_tss=Sum('tss', filter=Q(date_time__gte=one_week_ago))
+            if activities.exists():  # Only process if there are activities
+                challenge_leaderboard = (
+                    activities
+                    .values('user__username')
+                    .annotate(
+                        total_tss=Sum('tss'),
+                        week_tss=Sum('tss', filter=Q(date_time__gte=one_week_ago))
+                    )
+                    .order_by('-total_tss')
                 )
-                .order_by('-total_tss')
-            )
-            
-            for entry in challenge_leaderboard:
-                entry['challenge_name'] = challenge.name
-                entry['challenge_start_date'] = challenge.start_date
-                entry['challenge_end_date'] = challenge.end_date
-                leaderboard_data.append(entry)
+                
+                for entry in challenge_leaderboard:
+                    entry['challenge_name'] = challenge.name
+                    entry['challenge_start_date'] = challenge.start_date
+                    entry['challenge_end_date'] = challenge.end_date
+                    leaderboard_data.append(entry)
 
     user_position = None
     if selected_challenge:
@@ -127,6 +132,7 @@ def home(request):
         'user_position': user_position,
         'tss_data': tss_data,
     })
+
 
 
 def add_activity(request):

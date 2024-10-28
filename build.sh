@@ -12,13 +12,11 @@ pip install -r requirements.txt
 # Collect static files
 python manage.py collectstatic --no-input
 
-python manage.py makemigrations
-
 # Run database migrations
+# python manage.py makemigrations
 python manage.py migrate
 
 # Create superuser if it doesn't exist
-if [[ CREATE_SUPERUSER ]];
-then 
-    python manage.py createsuperuser --no-input --email "$DJANGO_SUPERUSER_EMAIL"
+if [ "$CREATE_SUPERUSER" = "TRUE" ]; then
+    python manage.py createsuperuser --no-input --email "$DJANGO_SUPERUSER_EMAIL" --username "$DJANGO_SUPERUSER_USERNAME"
 fi

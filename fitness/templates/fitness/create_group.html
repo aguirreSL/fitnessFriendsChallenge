@@ -9,5 +9,14 @@
     <button type="submit">Create Group</button>
 </form>
 
-{% endblock %}
+{% if form.errors %}
+    <div class="alert alert-danger">
+        <ul>
+            {% for field, errors in form.errors.items %}
+                <li>{{ field }}: {{ errors|join:", " }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
 
+{% endblock %}

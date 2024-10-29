@@ -208,7 +208,10 @@ def create_group(request):
             group = form.save(commit=False)
             group.save()
             group.members.add(request.user)  # Add the creator to the group
+            print("Group created:", group)  # Debugging output
             return redirect('group_list')
+        else:
+            print("Form errors:", form.errors)  # Show errors if invalid
     else:
         form = FitnessGroupForm()
     return render(request, 'fitness/create_group.html', {'form': form})
@@ -216,10 +219,20 @@ def create_group(request):
 def group_list(request):
     user_groups = request.user.fitness_groups.all()  # Groups the user is part of
     all_groups = FitnessGroup.objects.all()  # All groups
-
+    # Handle form submission for creating a group
+    if request.method == 'POST':
+        form = FitnessGroupForm(request.POST)
+        if form.is_valid():
+            group = form.save(commit=False)
+            group.save()
+            group.members.add(request.user)
+            return redirect('group_list')
+    else:
+        form = FitnessGroupForm()
     return render(request, 'fitness/group_list.html', {
         'user_groups': user_groups,
-        'all_groups': all_groups
+        'all_groups': all_groups,
+        'form': form,
     })
 
 @login_required

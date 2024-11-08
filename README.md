@@ -39,7 +39,7 @@ cd fitnessFriendsChallenge
 python -m venv env
 source env/bin/activate
 ``` 
-3.2 **Set Up a Virtual Environment Misnows**:
+3.2 **Set Up a Virtual Environment Windows**:
 ``` 
 python -m venv env
 env\Scripts\activate

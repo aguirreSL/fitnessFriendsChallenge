@@ -1,20 +1,21 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'fallback-secret-key')
-
+load_dotenv()
 ALLOWED_HOSTS = ['ffc.eu.pythonanywhere.com']
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'ffc$databaseffchub',
-        'USER': 'ffc',
-        'PASSWORD': 'a123123a',
-        'HOST': 'ffc.mysql.eu.pythonanywhere-services.com',
-        'PORT': '3306',  # Default port for MySQL
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT', '3306'),  # Default port for MySQL
     }
 }
 
@@ -64,10 +65,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'health_tracker.wsgi.application'
 
-# Supabase configuration
-SUPABASE_URL = os.getenv('SUPABASE_URL')
-SUPABASE_KEY = os.getenv('SUPABASE_KEY')
-
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -86,7 +83,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'CET'
+TIME_ZONE = 'Europe/Copenhagen'
 USE_I18N = True
 USE_TZ = True
 

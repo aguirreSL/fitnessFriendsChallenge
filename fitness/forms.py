@@ -10,7 +10,7 @@ class UserRegisterForm(UserCreationForm):
     email = forms.EmailField()
     date_of_birth = forms.DateField(help_text='Required. Format: YYYY-MM-DD', widget=forms.DateInput(attrs={'type': 'date'}),
                                     input_formats=['%Y-%m-%d'])
-    
+
     height = forms.IntegerField(help_text='Height in centimeters')
     weight = forms.IntegerField(help_text='Weight in kilograms')
     fitness_level = forms.IntegerField(help_text='Fitness level from 1 to 10')
@@ -47,7 +47,7 @@ class ActivityForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['date_time'].initial = datetime.now().strftime('%Y-%m-%d')  # Default value as today
-        self.fields['intensity'].label = 'Training Stress Score TSS' 
+        self.fields['intensity'].label = 'Training Stress Score TSS'
 
 
 

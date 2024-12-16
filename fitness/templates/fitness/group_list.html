@@ -22,21 +22,38 @@
             </div>
         </div>
         
-        <!-- Active Groups Column -->
+        <!-- Public Groups Column -->
         <div class="col-md-6 mb-4">
-            <h2 class="text-center mb-4">Active Groups</h2>
+            <h2 class="text-center mb-4">Public Groups</h2>
             <div class="card">
                 <div class="card-body">
                     <ul class="list-group">
-                        {% for group in all_groups %}
-                            {% if group not in user_groups %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <a href="{% url 'group_detail' group.id %}" class="text-decoration-none">{{ group.name }}</a>
-                                    <span class="badge bg-secondary rounded-pill">Join</span>
-                                </li>
-                            {% endif %}
+                        {% for group in public_groups %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <a href="{% url 'group_detail' group.id %}" class="text-decoration-none">{{ group.name }}</a>
+                                <span class="badge bg-secondary rounded-pill">Join</span>
+                            </li>
                         {% empty %}
-                            <li class="list-group-item">No groups found.</li>
+                            <li class="list-group-item">No public groups found.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Private Groups Column -->
+        <div class="col-md-6 mb-4">
+            <h2 class="text-center mb-4">Private Groups</h2>
+            <div class="card">
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for group in private_groups %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <a href="{% url 'group_detail' group.id %}" class="text-decoration-none">{{ group.name }}</a>
+                                <span class="badge bg-secondary rounded-pill">Join</span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item">No private groups found.</li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -60,5 +77,4 @@
         </div>
     </div>
 </div>
-
 {% endblock %}

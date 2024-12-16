@@ -3,8 +3,8 @@ from .models import FitnessActivity, WeightEntry, UserProfile, FitnessGroup, Cha
 from .forms import UserRegisterForm, ActivityForm, WeightEntryForm, FitnessGroupForm, ChallengeForm, InvitationForm #,DietaryLogForm
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum, Q  #added to build home 
-from django.utils.timezone import now, timedelta, make_aware #added to build home 
+from django.db.models import Sum, Q  #added to build home
+from django.utils.timezone import now, timedelta, make_aware #added to build home
 from django.contrib.auth.models import User  # Import the User model
 from datetime import datetime
 import logging
@@ -56,7 +56,7 @@ def home(request):
         else:
             start_date = make_aware(datetime.combine(selected_challenge.start_date, datetime.min.time()))
             end_date = now()
-            
+
             participants = selected_challenge.users.all()
             activities = FitnessActivity.objects.filter(user__in=participants, date_time__range=[start_date, end_date])
 
@@ -71,7 +71,7 @@ def home(request):
                     )
                     .order_by('-total_tss')
                 )
-                
+
                 for entry in leaderboard_data:
                     entry['challenge_name'] = selected_challenge.name
                     entry['challenge_start_date'] = selected_challenge.start_date
@@ -94,13 +94,13 @@ def home(request):
         selected_challenge = None
         leaderboard_data = []
         one_week_ago = now() - timedelta(days=7)
-        
+
         all_challenges = Challenge.objects.filter(fitness_group__in=user_groups)
         for challenge in all_challenges:
             start_date = make_aware(datetime.combine(challenge.start_date, datetime.min.time()))
             end_date = make_aware(datetime.combine(challenge.end_date, datetime.min.time()))
             activities = FitnessActivity.objects.filter(user=request.user, date_time__range=[start_date, end_date])
-            
+
             if activities.exists():  # Only process if there are activities
                 challenge_leaderboard = (
                     activities
@@ -111,7 +111,7 @@ def home(request):
                     )
                     .order_by('-total_tss')
                 )
-                
+
                 for entry in challenge_leaderboard:
                     entry['challenge_name'] = challenge.name
                     entry['challenge_start_date'] = challenge.start_date
@@ -179,8 +179,8 @@ def weight_tracker(request):
     weights = [entry.weight for entry in weight_entries]
 
     return render(request, 'fitness/weight_tracker.html', {
-        'form': form, 
-        'dates': dates, 
+        'form': form,
+        'dates': dates,
         'weights': weights
     })
 
@@ -188,10 +188,10 @@ def weight_tracker(request):
 def profile(request):
     user_profile = UserProfile.objects.get(user=request.user)
     groups = FitnessGroup.objects.filter(members=request.user)
-    
+
     # Update this query to reference the correct field name
     challenges = Challenge.objects.filter(fitness_group__members=request.user)
-    
+
     context = {
         'user': request.user,
         'user_profile': user_profile,
@@ -218,8 +218,9 @@ def create_group(request):
 
 def group_list(request):
     user_groups = request.user.fitness_groups.all()  # Groups the user is part of
-    all_groups = FitnessGroup.objects.all()  # All groups
-    # Handle form submission for creating a group
+    public_groups = FitnessGroup.objects.filter(is_public=True)  # Public groups
+    private_groups = FitnessGroup.objects.filter(is_public=False, members=request.user)  # Private groups the user is part of
+
     if request.method == 'POST':
         form = FitnessGroupForm(request.POST)
         if form.is_valid():
@@ -231,7 +232,8 @@ def group_list(request):
         form = FitnessGroupForm()
     return render(request, 'fitness/group_list.html', {
         'user_groups': user_groups,
-        'all_groups': all_groups,
+        'public_groups': public_groups,
+        'private_groups': private_groups,
         'form': form,
     })
 
@@ -240,7 +242,7 @@ def create_challenge(request):
     if request.method == 'POST':
         form = ChallengeForm(request.POST, user=request.user)
         if form.is_valid():
-            form.save()
+            challenge = form.save()  # Save the form and get the challenge instance
             challenge.users.add(request.user)  # Add the current user to the challenge's users
             return redirect('challenge_list')
     else:
@@ -248,8 +250,12 @@ def create_challenge(request):
     return render(request, 'fitness/challenge_form.html', {'form': form})
 
 def challenge_list(request):
-    challenges = Challenge.objects.filter(fitness_group__members=request.user)
-    return render(request, 'fitness/challenge_list.html', {'challenges': challenges})
+    public_challenges = Challenge.objects.filter(is_public=True)
+    private_challenges = Challenge.objects.filter(is_public=False, fitness_group__members=request.user)
+    return render(request, 'fitness/challenge_list.html', {
+        'public_challenges': public_challenges,
+        'private_challenges': private_challenges,
+    })
 
 @login_required
 def group_detail(request, fitness_group_id):
@@ -257,7 +263,7 @@ def group_detail(request, fitness_group_id):
     challenges = Challenge.objects.filter(fitness_group=group)
     members = group.members.all()
     non_members = User.objects.exclude(id__in=members.values_list('id', flat=True))  # Non-members
-    
+
     if request.method == 'POST':
         form = InvitationForm(request.POST, group=group)
         if form.is_valid():
@@ -320,20 +326,20 @@ def send_invitation(request, fitness_group_id=None, challenge_id=None):
         if form.is_valid():
             invitation = form.save(commit=False)
             invitation.sender = request.user
-            
+
             if challenge_id:
                 # Handle challenge invitation
                 challenge = get_object_or_404(Challenge, id=challenge_id)
                 invitation.challenge = challenge
                 invitation.invite_type = 'challenge'
                 invitation.fitness_group = challenge.fitness_group  # Set the group based on the challenge
-            
+
             elif fitness_group_id:
                 # Handle group invitation
                 fitness_group = get_object_or_404(FitnessGroup, id=fitness_group_id)
                 invitation.fitness_group = fitness_group
                 invitation.invite_type = 'group'
-            
+
             invitation.save()
             return redirect('invitations_list')  # Redirect to the list of invitations after sending
     else:
@@ -343,16 +349,16 @@ def send_invitation(request, fitness_group_id=None, challenge_id=None):
         if fitness_group_id:
             initial_data['group'] = fitness_group_id
         form = InvitationForm(initial=initial_data)
-    
+
     return render(request, 'fitness/send_invitation.html', {'form': form})
 
 @login_required
 def respond_invitation(request, invitation_id, response):
     invitation = Invitation.objects.get(id=invitation_id)
-    
+
     if invitation.receiver != request.user:
         return redirect('home')  # Prevent unauthorized access
-    
+
     if response == 'accept':
         invitation.status = 'Accepted'
         # Add user to group or challenge based on the invitation type
@@ -362,14 +368,14 @@ def respond_invitation(request, invitation_id, response):
             invitation.challenge.participants.add(invitation.receiver)
     elif response == 'decline':
         invitation.status = 'Declined'
-    
+
     invitation.save()
     return redirect('invitations_list')  # Redirect to a page listing all invitations
 
 @login_required
 def invitations_list(request):
     invitations = Invitation.objects.filter(receiver=request.user)
-    return render(request, 'fitness/invitations_list.html', {'invitations': invitations})  
+    return render(request, 'fitness/invitations_list.html', {'invitations': invitations})
 
 def get_group_users(request, fitness_group_id):
     fitness_group = FitnessGroup.objects.get(id=fitness_group_id)
@@ -383,4 +389,12 @@ def all_groups(request):
     groups = FitnessGroup.objects.all()  # Retrieve all fitness groups
     return render(request, 'fitness/all_groups.html', {'groups': groups})
 
-    
+@login_required
+def toggle_group_visibility(request, fitness_group_id):
+    group = get_object_or_404(FitnessGroup, id=fitness_group_id)
+    if request.method == 'POST':
+        is_public = request.POST.get('is_public') == 'on'
+        group.is_public = is_public
+        group.save()
+        return redirect('group_detail', fitness_group_id=fitness_group_id)
+

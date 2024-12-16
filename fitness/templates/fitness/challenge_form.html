@@ -3,13 +3,21 @@
 {% block title %}Create/Edit Challenge{% endblock %}
 
 {% block content %}
-<h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} Challenge</h2>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">{% if form.instance.pk %}Edit{% else %}Create{% endif %} Challenge</h2>
 
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save</button>
-</form>
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-custom btn-block mt-3">Save</button>
+            </form>
+        </div>
+    </div>
 
-<a href="{% url 'challenge_list' %}">Back to Challenges</a>
+    <div class="text-center">
+        <a href="{% url 'challenge_list' %}" class="btn btn-secondary mt-3">Back to Challenges</a>
+    </div>
+</div>
 {% endblock %}

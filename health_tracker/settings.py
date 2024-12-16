@@ -2,25 +2,37 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'fallback-secret-key')
+
 load_dotenv()
-ALLOWED_HOSTS = ['ffc.eu.pythonanywhere.com']
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT', '3306'),  # Default port for MySQL
+ENVIRONMENT = os.getenv('DJANGO_ENV', 'development')
+
+DEBUG = ENVIRONMENT == 'development'
+
+ALLOWED_HOSTS = ['localhost'] if ENVIRONMENT == 'development' else ['ffc.eu.pythonanywhere.com']
+
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
-
-
-
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.getenv('DB_NAME'),
+            'USER': os.getenv('DB_USER'),
+            'PASSWORD': os.getenv('DB_PASSWORD'),
+            'HOST': os.getenv('DB_HOST'),
+            'PORT': os.getenv('DB_PORT', '3306'),  # Default port for MySQL
+        }
+    }
 
 # Application definition
 INSTALLED_APPS = [

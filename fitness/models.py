@@ -8,6 +8,7 @@ class FitnessActivity(models.Model):
         ('RUN', 'Running'),
         ('YOG', 'Yoga'),
         ('CYC', 'Cycling'),
+        ('WEI', 'Wheight Lift'),
         # Add more activities as needed
     ]
 
@@ -19,7 +20,7 @@ class FitnessActivity(models.Model):
     date_time = models.DateTimeField()
     # Add TSS field
     tss = models.FloatField(null=True, blank=True)  # TSS can be a float value
-    
+
     def __str__(self):
         return f"{self.activity_type} on {self.date_time.strftime('%Y-%m-%d')}"
 
@@ -45,6 +46,7 @@ class FitnessGroup(models.Model):
     name = models.CharField(max_length=100)
     members = models.ManyToManyField(User, related_name='fitness_groups')  # Change related_name to something unique
     created_at = models.DateTimeField(auto_now_add=True)
+    is_public = models.BooleanField(default=True)  # New field to indicate if the group is public or private
 
     def __str__(self):
         return self.name
@@ -98,14 +100,16 @@ class Challenge(models.Model):
         ('CAL', 'Calories'),
         ('KM', 'Kilometers'),
         ('TSS', 'TSS'),
+        ('Fastest Run', 'Time'),
     ]
     name = models.CharField(max_length=100)
     fitness_group = models.ForeignKey(FitnessGroup, on_delete=models.CASCADE)
-    challenge_type = models.CharField(max_length=3, choices=CHALLENGE_TYPE_CHOICES)
+    challenge_type = models.CharField(max_length=12, choices=CHALLENGE_TYPE_CHOICES)
     target_amount = models.PositiveIntegerField()
     start_date = models.DateField()
-    end_date = models.DateField()    
+    end_date = models.DateField()
     users = models.ManyToManyField(User, related_name='challenges', blank=True)
+    is_public = models.BooleanField(default=True)  # New field to indicate if the challenge is public or private
 
     def __str__(self):
         return f"Challenge: {self.challenge_type} - Target: {self.target_amount}"
@@ -118,7 +122,7 @@ class LeaderboardEntry(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.challenge} - Progress: {self.progress}"
 
-#Creating invitation system 
+#Creating invitation system
 class InviteType(models.TextChoices):
     GROUP_INVITE = 'FitnessGroup', 'Group Invite'
     CHALLENGE_INVITE = 'CHALLENGE', 'Challenge Invite'

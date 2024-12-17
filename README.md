@@ -19,15 +19,24 @@ Welcome to the **Fitness Friends Challenge**, our intuitive and dynamic web appl
 - **Data Visualization**: Chart.js for rendering interactive and informative graphs.
 - **Database**: SQLite for development, with easy scalability to PostgreSQL or other databases for production.
 
+## TODO
+
+- Create manager role for fitness groups
+- Assign only manager to be able to change group visibility
+- Create manager role for challenges
+- Assign only manager to be able to edit challenges
+- Fix TSS graph in the initial home
+- Revisit css across app (yeah, it is not beautifull yet)
+
 ## Getting Started
 
 1. **Clone the Repository**:
 
-``` git clone git@github.com:aguirreSL/fitnessFriendsChallenge.git``` 
+``` git clone git@github.com:aguirreSL/fitnessFriendsChallenge.git```
 
 ```or```
 
-``` git clone https://github.com/aguirreSL/fitnessFriendsChallenge.git``` 
+``` git clone https://github.com/aguirreSL/fitnessFriendsChallenge.git```
 
 2. **Navigate to the project directory**:
 ```
@@ -35,32 +44,32 @@ cd fitnessFriendsChallenge
 ```
 
 3.1 **Set Up a Virtual Environment Mac**:
-``` 
+```
 python -m venv env
 source env/bin/activate
-``` 
+```
 3.2 **Set Up a Virtual Environment Windows**:
-``` 
+```
 python -m venv env
 env\Scripts\activate
-``` 
+```
 
 4. **Install Dependencies**:
-``` 
+```
 pip install -r requirements.txt
-``` 
+```
 
 5. **Generate a Secret Key**:
 Run the following command to generate a new secret key:
-``` 
+```
 python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
-``` 
+```
 6. **Create the `.env` File**:
-This project uses environment variables to store sensitive information. 
+This project uses environment variables to store sensitive information.
 You need to create a `.env` file. In the root directory of the project, create a file named .env.
 
 - **macOS/Linux**: Run the following command to create the `.env` file:
-  
+
   ``` bash
   touch .env
   ```
@@ -71,25 +80,25 @@ You need to create a `.env` file. In the root directory of the project, create a
 
 Copy the generated secret key and paste it into the SECRET_KEY field in the .env file like this:
 
-``` 
+```
 SECRET_KEY=hfg93jgh$0f3o3m=f*al50!exnp^$f$qlr^0as9+md+v
-``` 
+```
 
 A complete view of .env can be
-``` 
+```
 SECRET_KEY=your_generated_secret_key
 DEBUG=True  # Set to False in production (deployed)
 DATABASE_URL=your_database_url  # Add your database URL if using a remote database
-``` 
+```
 
 Important: Never share your .env file publicly, especially when deploying to production
 
 
 7. **Initialize the Database**:
-``` 
+```
 python manage.py makemigrations
 python manage.py migrate
-``` 
+```
 
 8. **Create a superuser (optional but recommended for admin access)**:
 ```
@@ -97,7 +106,7 @@ python manage.py createsuperuser
 ```
 
 9. **Run the Server**:
-``` 
+```
 python manage.py runserver
 ```
 
@@ -107,12 +116,12 @@ You can generate the class diagram with:
 python manage.py graph_models -a -o Diagram.png
 ```
 ```
-Command Breakdown: 
+Command Breakdown:
 python manage.py: Runs the Django management script.
 graph_models: Generates a graphical representation of your models.
 -a: Includes all apps in the project.
 -o Diagram.png: Saves the output as Diagram.png.
-``` 
+```
 
 Below is the current UML diagram for the project:
 ![UML](Diagram.png)

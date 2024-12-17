@@ -144,7 +144,7 @@ def add_activity(request):
             activity.save()
             return redirect('activity_list')
     else:
-        form = ActivityForm()  # Make sure this line is correct
+        form = ActivityForm()
 
     return render(request, 'fitness/add_activity.html', {'form': form})
 
@@ -264,6 +264,8 @@ def group_detail(request, fitness_group_id):
     members = group.members.all()
     non_members = User.objects.exclude(id__in=members.values_list('id', flat=True))  # Non-members
 
+    pending_invitations = Invitation.objects.filter(fitness_group=group, status='Pending')
+
     if request.method == 'POST':
         form = InvitationForm(request.POST, group=group)
         if form.is_valid():
@@ -279,7 +281,8 @@ def group_detail(request, fitness_group_id):
         'challenges': challenges,
         'members': members,
         'non_members': non_members,  # Pass non-members to the template
-        'form': form
+        'form': form,
+        'pending_invitations': pending_invitations,  # Pass pending invitations to the template
     })
 
 @login_required
@@ -398,3 +401,45 @@ def toggle_group_visibility(request, fitness_group_id):
         group.save()
         return redirect('group_detail', fitness_group_id=fitness_group_id)
 
+@login_required
+def request_to_join_group(request, fitness_group_id):
+    group = get_object_or_404(FitnessGroup, id=fitness_group_id)
+    if request.method == 'POST':
+        # Create an invitation for the group admin to approve
+        Invitation.objects.create(
+            invite_type='group',
+            fitness_group=group,
+            sender=request.user,
+            invitee=group.members.first(),  # Assuming the first member is the admin
+            message=f"{request.user.username} has requested to join the group."
+        )
+        return redirect('group_detail', fitness_group_id=fitness_group_id)
+@login_required
+def request_to_join_group(request, fitness_group_id):
+    group = get_object_or_404(FitnessGroup, id=fitness_group_id)
+    if request.method == 'POST':
+        Invitation.objects.create(
+            invite_type='fitnessGroup',
+            fitness_group=group,
+            sender=request.user,
+            invitee=group.members.first(),  # Placeholder, not used for approval
+            message=f"{request.user.username} has requested to join the group."
+        )
+        return redirect('group_detail', fitness_group_id=fitness_group_id)
+
+@login_required
+def approve_join_request(request, invitation_id):
+    invitation = get_object_or_404(Invitation, id=invitation_id)
+    if request.method == 'POST' and invitation.fitness_group.members.filter(id=request.user.id).exists():
+        invitation.status = 'Approved'
+        invitation.fitness_group.members.add(invitation.sender)
+        invitation.save()
+        return redirect('group_detail', fitness_group_id=invitation.fitness_group.id)
+
+@login_required
+def reject_join_request(request, invitation_id):
+    invitation = get_object_or_404(Invitation, id=invitation_id)
+    if request.method == 'POST' and invitation.fitness_group.members.filter(id=request.user.id).exists():
+        invitation.status = 'Rejected'
+        invitation.save()
+        return redirect('group_detail', fitness_group_id=invitation.fitness_group.id)

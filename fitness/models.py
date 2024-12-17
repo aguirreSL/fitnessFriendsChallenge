@@ -132,13 +132,14 @@ class Invitation(models.Model):
         ('fitnessGroup', 'FitnessGroup'),
         ('challenge', 'Challenge'),
     ]
-    invite_type = models.CharField(max_length=20, choices=INVITE_TYPE_CHOICES,default=InviteType.GROUP_INVITE)
+    invite_type = models.CharField(max_length=20, choices=INVITE_TYPE_CHOICES, default=InviteType.GROUP_INVITE)
     fitness_group = models.ForeignKey(FitnessGroup, on_delete=models.CASCADE, null=True, blank=True)
     challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE, null=True, blank=True)
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_invitations')
     invitee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_invitations')
     message = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, default='Pending')  # Add status field
 
     def clean(self):
         if self.invite_type == 'challenge' and not self.challenge:

@@ -36,7 +36,7 @@ class UserRegisterForm(UserCreationForm):
 class ActivityForm(forms.ModelForm):
     class Meta:
         model = FitnessActivity
-        fields = ['activity_type', 'duration', 'intensity', 'calories_burned', 'date_time']
+        fields = ['activity_type', 'duration', 'calories_burned', 'date_time', 'tss']
         widgets = {
             'date_time': forms.DateInput(format='%d/%m/%Y', attrs={
                 'type': 'date',
@@ -47,7 +47,7 @@ class ActivityForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['date_time'].initial = datetime.now().strftime('%Y-%m-%d')  # Default value as today
-        self.fields['intensity'].label = 'Training Stress Score TSS'
+        self.fields['tss'].label = 'Training Stress Score TSS'
 
 
 

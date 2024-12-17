@@ -100,5 +100,38 @@
             </form>
         </div>
     </div>
+
+    <!-- New Section for Request to Join Group -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="card-title">Request to Join Group</h2>
+            <form method="POST" action="{% url 'request_to_join_group' group.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-custom btn-block">Request to Join</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Section for Approving Join Requests -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="card-title">Pending Join Requests</h2>
+            <ul class="list-group">
+                {% for invitation in pending_invitations %}
+                    <li class="list-group-item">
+                        {{ invitation.sender.username }} has requested to join the group.
+                        <form method="POST" action="{% url 'approve_join_request' invitation.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                        </form>
+                        <form method="POST" action="{% url 'reject_join_request' invitation.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 </div>
 {% endblock %}

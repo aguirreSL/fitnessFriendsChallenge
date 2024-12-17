@@ -27,5 +27,7 @@ urlpatterns = [
     path('create_invitation/', views.create_invitation, name='create_invitation'),
     path('get_group_users/<int:fitness_group_id>/', views.get_group_users, name='get_group_users'),
     path('group/<int:fitness_group_id>/toggle_visibility/', views.toggle_group_visibility, name='toggle_group_visibility'),
-
+    path('group/<int:fitness_group_id>/request_to_join/', views.request_to_join_group, name='request_to_join_group'),
+    path('invitation/<int:invitation_id>/approve/', views.approve_join_request, name='approve_join_request'),
+    path('invitation/<int:invitation_id>/reject/', views.reject_join_request, name='reject_join_request'),
 ]

@@ -20,7 +20,8 @@ Welcome to the **Fitness Friends Challenge**, our intuitive and dynamic web appl
 - **Database**: SQLite for development, with easy scalability to PostgreSQL or other databases for production.
 
 ## TODO
-
+- Prevent minus on Fitness level when registering a new user
+- Date type misaligned at register form
 - Send invitation (list correctly the challenges on each fitness group)
 - Send invitation (only show appropriated fields depending on the invite type)
 - Create manager role for fitness groups

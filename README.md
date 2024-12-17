@@ -21,6 +21,8 @@ Welcome to the **Fitness Friends Challenge**, our intuitive and dynamic web appl
 
 ## TODO
 
+- Send invitation (list correctly the challenges on each fitness group)
+- Send invitation (only show appropriated fields depending on the invite type)
 - Create manager role for fitness groups
 - Assign only manager to be able to change group visibility
 - Create manager role for challenges

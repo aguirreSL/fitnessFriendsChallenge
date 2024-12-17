@@ -336,36 +336,32 @@ def create_invitation(request):
 
 @login_required
 def send_invitation(request, fitness_group_id=None, challenge_id=None):
+    group = get_object_or_404(FitnessGroup, id=fitness_group_id) if fitness_group_id else None
+    challenge = get_object_or_404(Challenge, id=challenge_id) if challenge_id else None
+
     if request.method == 'POST':
-        form = InvitationForm(request.POST)
+        form = InvitationForm(request.POST, group=group, challenge=challenge)
         if form.is_valid():
             invitation = form.save(commit=False)
             invitation.sender = request.user
 
-            if challenge_id:
-                # Handle challenge invitation
-                challenge = get_object_or_404(Challenge, id=challenge_id)
-                invitation.challenge = challenge
-                invitation.invite_type = 'challenge'
-                invitation.fitness_group = challenge.fitness_group  # Set the group based on the challenge
-
-            elif fitness_group_id:
-                # Handle group invitation
-                fitness_group = get_object_or_404(FitnessGroup, id=fitness_group_id)
-                invitation.fitness_group = fitness_group
-                invitation.invite_type = 'group'
+            if invitation.invite_type == InviteType.CHALLENGE_INVITE and challenge:
+                if not group.members.filter(id=invitation.invitee.id).exists():
+                    # Send combined invite
+                    Invitation.objects.create(
+                        invite_type=InviteType.GROUP_INVITE,
+                        fitness_group=group,
+                        sender=request.user,
+                        invitee=invitation.invitee,
+                        message=f"Combined invite: {invitation.message}"
+                    )
 
             invitation.save()
-            return redirect('invitations_list')  # Redirect to the list of invitations after sending
+            return redirect('group_detail', fitness_group_id=group.id if group else challenge.fitness_group.id)
     else:
-        initial_data = {}
-        if challenge_id:
-            initial_data['challenge'] = challenge_id
-        if fitness_group_id:
-            initial_data['group'] = fitness_group_id
-        form = InvitationForm(initial=initial_data)
+        form = InvitationForm(group=group, challenge=challenge)
 
-    return render(request, 'fitness/send_invitation.html', {'form': form})
+    return render(request, 'fitness/send_invitation.html', {'form': form, 'group': group, 'challenge': challenge})
 
 @login_required
 def respond_invitation(request, invitation_id, response):

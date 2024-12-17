@@ -1,13 +1,34 @@
 {% extends 'fitness/base.html' %}
 
-{% block title %}Send Invitation{% endblock %}
-
 {% block content %}
-<h2>Send Invitation</h2>
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Send Invitation</button>
-</form>
-<a href="{% url 'home' %}">Back to Home</a>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Send Invitation</h2>
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-custom btn-block mt-3">Send Invitation</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const inviteTypeField = document.getElementById('id_invite_type');
+        const challengeField = document.getElementById('id_challenge').closest('.form-group');
+
+        function toggleChallengeField() {
+            if (inviteTypeField.value === 'challenge') {
+                challengeField.style.display = 'block';
+            } else {
+                challengeField.style.display = 'none';
+            }
+        }
+
+        inviteTypeField.addEventListener('change', toggleChallengeField);
+        toggleChallengeField();  // Initial call to set the correct state
+    });
+</script>
 {% endblock %}

@@ -14,7 +14,7 @@ class FitnessActivity(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     activity_type = models.CharField(max_length=3, choices=ACTIVITY_CHOICES)
-    duration = models.DurationField()  # e.g., 30 minutes
+    duration = models.IntegerField()  # e.g., 30 minutes
     intensity = models.CharField(max_length=50)  # e.g., moderate, high
     calories_burned = models.IntegerField()
     date_time = models.DateTimeField()

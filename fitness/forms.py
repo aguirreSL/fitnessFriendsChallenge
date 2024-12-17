@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import UserProfile, FitnessActivity, WeightEntry, FitnessGroup, Challenge, LeaderboardEntry, Invitation #,DietaryLog
+from .models import UserProfile, FitnessActivity, WeightEntry, FitnessGroup, Challenge, LeaderboardEntry, Invitation, InviteType #,DietaryLog
 from django.utils import timezone
 from datetime import datetime
 from django.forms.widgets import DateInput #DateInput to be able to use the little calendar :)
@@ -13,7 +13,12 @@ class UserRegisterForm(UserCreationForm):
 
     height = forms.IntegerField(help_text='Height in centimeters')
     weight = forms.IntegerField(help_text='Weight in kilograms')
-    fitness_level = forms.IntegerField(help_text='Fitness level from 1 to 10')
+    fitness_level = forms.IntegerField(
+        help_text='Fitness level from 1 to 10',
+        min_value=1,
+        max_value=10,
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    )
 
     class Meta:
         model = User
@@ -46,7 +51,7 @@ class ActivityForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['date_time'].initial = datetime.now().strftime('%Y-%m-%d')  # Default value as today
+        self.fields['date_time'].initial = datetime.now().strftime('%d-%m-%Y')  # Default value as today
         self.fields['tss'].label = 'Training Stress Score TSS'
 
 
@@ -101,6 +106,7 @@ class InvitationForm(forms.ModelForm):
 
         self.fields['invitee'].queryset = User.objects.none()
         self.fields['challenge'].queryset = Challenge.objects.none()
+        self.fields['invitee'].label = 'Select a user '
 
         if group:
             # Exclude users who are already members of the group
@@ -113,3 +119,16 @@ class InvitationForm(forms.ModelForm):
                 self.fields['challenge'].queryset = Challenge.objects.filter(fitness_group=self.instance.fitness_group)
             elif self.instance.invite_type == InviteType.GROUP_INVITE:
                 self.fields['invitee'].queryset = User.objects.exclude(id__in=self.instance.fitness_group.members.all())
+
+    def clean(self):
+        cleaned_data = super().clean()
+        invite_type = cleaned_data.get('invite_type')
+        fitness_group = cleaned_data.get('fitness_group')
+        challenge = cleaned_data.get('challenge')
+        invitee = cleaned_data.get('invitee')
+
+        if invite_type == InviteType.CHALLENGE_INVITE and challenge:
+            if not fitness_group.members.filter(id=invitee.id).exists():
+                raise forms.ValidationError('The selected user is not a member of the group. A combined invite will be sent.')
+
+        return cleaned_data

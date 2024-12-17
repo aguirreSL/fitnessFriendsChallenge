@@ -28,6 +28,9 @@
                                         <td>{{ activity.calories_burned }}</td>
                                         <td>{{ activity.date_time }}</td>
                                         <td>{{ activity.tss }}</td>
+                                        <td>
+                                            <a href="{% url 'edit_activity' activity.id %}" class="btn btn-sm btn-primary">Edit</a>
+                                        </td>
                                     </tr>
                                 {% empty %}
                                     <tr>

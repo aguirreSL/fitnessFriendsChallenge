@@ -148,6 +148,18 @@ def add_activity(request):
 
     return render(request, 'fitness/add_activity.html', {'form': form})
 
+def edit_activity(request, activity_id):
+    activity = get_object_or_404(FitnessActivity, id=activity_id)
+    if request.method == 'POST':
+        form = ActivityForm(request.POST, instance=activity)
+        if form.is_valid():
+            form.save()
+            return redirect('activity_list')
+    else:
+        form = ActivityForm(instance=activity)
+
+    return render(request, 'fitness/edit_activity.html', {'form': form, 'activity': activity})
+
 # def add_diet_log(request):
 #     if request.method == 'POST':
 #         form = DietaryLogForm(request.POST)

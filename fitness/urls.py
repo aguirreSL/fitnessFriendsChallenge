@@ -30,4 +30,5 @@ urlpatterns = [
     path('group/<int:fitness_group_id>/request_to_join/', views.request_to_join_group, name='request_to_join_group'),
     path('invitation/<int:invitation_id>/approve/', views.approve_join_request, name='approve_join_request'),
     path('invitation/<int:invitation_id>/reject/', views.reject_join_request, name='reject_join_request'),
+    path('activity/<int:activity_id>/edit/', views.edit_activity, name='edit_activity'),
 ]

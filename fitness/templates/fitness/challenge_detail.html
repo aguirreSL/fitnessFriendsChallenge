@@ -1,0 +1,45 @@
+{% extends 'fitness/base.html' %}
+{% load custom_filters %}
+
+{% block title %}Challenge Detail{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">{{ challenge.name }} (<a href="{% url 'edit_challenge' challenge.id %}" class="text-decoration-none">Edit</a>)</h2>
+    <p><strong>Description:</strong> {{ challenge.description }}</p>
+    <p><strong>Type:</strong> {{ challenge.get_challenge_type_display }}</p>
+    <p><strong>Group:</strong> {{ challenge.fitness_group.name }}</p>
+    <p><strong>Target Amount:</strong> {{ challenge.target_amount }} {{ challenge.get_challenge_type_display }}</p>
+    <p><strong>Start Date:</strong> {{ challenge.start_date }}</p>
+    <p><strong>End Date:</strong> {{ challenge.end_date }}</p>
+    <h3>Participants</h3>
+    <table class="table table-striped table-bordered" style="color: #000;">
+        <thead class="custom-thead">
+            <tr>
+                <th>User</th>
+                <th>Week {{ challenge.get_challenge_type_display }}</th>
+                <th>Current Total {{ challenge.get_challenge_type_display }}</th>
+                <th>Consecutive Activities Log Days</th>
+                <th>Current Week Start</th>
+                <th>Total Stars</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for participant in participants_data %}
+                <tr>
+                    <td>{{ participant.username }}</td>
+                    <td>{{ participant.week_challenge_type_display }}</td>
+                    <td>{{ participant.current_total_challenge_type_display }}</td>
+                    <td>{{ participant.consecutive_activities_log_days }}</td>
+                    <td>{{ participant.current_week_start }}</td>
+                     <td>{{ participant.total_stars|stars }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No participants yet.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -18,12 +18,9 @@ def activity_list(request):
 def custom_logout(request):
     logout(request)
     return redirect('login')
-
 # def diet_log(request):
 #     diet_logs = DietaryLog.objects.filter(user=request.user)
 #     return render(request, 'fitness/diet_log.html', {'diet_logs': diet_logs})
-
-
 def register(request):
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
@@ -264,9 +261,12 @@ def create_challenge(request):
 def challenge_list(request):
     public_challenges = Challenge.objects.filter(is_public=True)
     private_challenges = Challenge.objects.filter(is_public=False, fitness_group__members=request.user)
+    pending_invitations = Invitation.objects.filter(invite_type='challenge', status='Pending')
+
     return render(request, 'fitness/challenge_list.html', {
         'public_challenges': public_challenges,
         'private_challenges': private_challenges,
+        'pending_invitations': pending_invitations,
     })
 
 @login_required
@@ -302,7 +302,7 @@ def edit_challenge(request, pk):
     challenge = get_object_or_404(Challenge, pk=pk, fitness_group__in=request.user.fitness_groups.all())
 
     if request.method == 'POST':
-        form = ChallengeForm(request.POST, instance=challenge, user=request.user)
+        form = ChallengeForm(request.POST, instance=challenge)
         if form.is_valid():
             form.save()
             return redirect('challenge_list')
@@ -319,7 +319,7 @@ def edit_challenge(request, pk):
             return redirect('challenge_list')  # After sending invitation
 
     else:
-        form = ChallengeForm(instance=challenge, user=request.user)
+        form = ChallengeForm(instance=challenge)
 
     return render(request, 'fitness/challenge_form.html', {'form': form})
 
@@ -413,19 +413,6 @@ def toggle_group_visibility(request, fitness_group_id):
 def request_to_join_group(request, fitness_group_id):
     group = get_object_or_404(FitnessGroup, id=fitness_group_id)
     if request.method == 'POST':
-        # Create an invitation for the group admin to approve
-        Invitation.objects.create(
-            invite_type='group',
-            fitness_group=group,
-            sender=request.user,
-            invitee=group.members.first(),  # Assuming the first member is the admin
-            message=f"{request.user.username} has requested to join the group."
-        )
-        return redirect('group_detail', fitness_group_id=fitness_group_id)
-@login_required
-def request_to_join_group(request, fitness_group_id):
-    group = get_object_or_404(FitnessGroup, id=fitness_group_id)
-    if request.method == 'POST':
         Invitation.objects.create(
             invite_type='fitnessGroup',
             fitness_group=group,
@@ -451,3 +438,115 @@ def reject_join_request(request, invitation_id):
         invitation.status = 'Rejected'
         invitation.save()
         return redirect('group_detail', fitness_group_id=invitation.fitness_group.id)
+
+@login_required
+def request_to_join_challenge(request, challenge_id):
+    challenge = get_object_or_404(Challenge, id=challenge_id)
+    if request.method == 'POST':
+        Invitation.objects.create(
+            invite_type='challenge',
+            challenge=challenge,
+            sender=request.user,
+            invitee=challenge.users.first(),  # Placeholder, not used for approval
+            message=f"{request.user.username} has requested to join the challenge."
+        )
+        return redirect('challenge_detail', challenge_id=challenge_id)
+
+@login_required
+def approve_challenge_join_request(request, invitation_id):
+    invitation = get_object_or_404(Invitation, id=invitation_id)
+    if request.method == 'POST' and invitation.challenge.fitness_group.members.filter(id=request.user.id).exists():
+        invitation.status = 'Approved'
+        invitation.challenge.users.add(invitation.sender)
+        invitation.save()
+        return redirect('challenge_detail', challenge_id=invitation.challenge.id)
+
+
+@login_required
+def reject_challenge_join_request(request, invitation_id):
+    invitation = get_object_or_404(Invitation, id=invitation_id)
+    if request.method == 'POST' and invitation.challenge.fitness_group.members.filter(id=request.user.id).exists():
+        invitation.status = 'Rejected'
+        invitation.save()
+        return redirect('challenge_detail', challenge_id=invitation.challenge.id)
+
+@login_required
+def challenge_detail(request, challenge_id):
+    challenge = get_object_or_404(Challenge, id=challenge_id)
+    participants_data = []
+
+    for user in challenge.users.all():
+        week_challenge_type_display = calculate_week_challenge_type_display(user, challenge)
+        current_total_challenge_type_display = calculate_current_total_challenge_type_display(user, challenge)
+        consecutive_activities_log_days = calculate_consecutive_activities_log_days(user, challenge)
+        current_week_start = calculate_current_week_start(user, challenge)
+        total_stars = calculate_total_stars(user, challenge)
+
+        participants_data.append({
+            'username': user.username,
+            'week_challenge_type_display': week_challenge_type_display,
+            'current_total_challenge_type_display': current_total_challenge_type_display,
+            'consecutive_activities_log_days': consecutive_activities_log_days,
+            'current_week_start': current_week_start,
+            'total_stars': total_stars,
+        })
+
+    return render(request, 'fitness/challenge_detail.html', {
+        'challenge': challenge,
+        'participants_data': participants_data,
+    })
+
+def calculate_week_challenge_type_display(user, challenge):
+    one_week_ago = now() - timedelta(days=7)
+    activities = FitnessActivity.objects.filter(user=user, date_time__gte=one_week_ago, date_time__lte=now())
+    if challenge.challenge_type == 'CAL':
+        total = activities.aggregate(Sum('calories_burned'))['calories_burned__sum'] or 0
+    elif challenge.challenge_type == 'KM':
+        total = activities.aggregate(Sum('distance'))['distance__sum'] or 0  # Assuming you have a distance field
+    elif challenge.challenge_type == 'TSS':
+        total = activities.aggregate(Sum('tss'))['tss__sum'] or 0
+    else:
+        total = 0
+    return total
+
+def calculate_current_total_challenge_type_display(user, challenge):
+    activities = FitnessActivity.objects.filter(user=user, date_time__gte=challenge.start_date, date_time__lte=now())
+    if challenge.challenge_type == 'CAL':
+        total = activities.aggregate(Sum('calories_burned'))['calories_burned__sum'] or 0
+    elif challenge.challenge_type == 'KM':
+        total = activities.aggregate(Sum('distance'))['distance__sum'] or 0  # Assuming you have a distance field
+    elif challenge.challenge_type == 'TSS':
+        total = activities.aggregate(Sum('tss'))['tss__sum'] or 0
+    else:
+        total = 0
+    return total
+
+def calculate_consecutive_activities_log_days(user, challenge):
+    activities = FitnessActivity.objects.filter(user=user, date_time__gte=challenge.start_date, date_time__lte=now()).order_by('date_time')
+    consecutive_days = 0
+    current_streak = 0
+    previous_date = None
+
+    for activity in activities:
+        if previous_date:
+            if (activity.date_time.date() - previous_date).days == 1:
+                current_streak += 1
+            else:
+                current_streak = 1
+        else:
+            current_streak = 1
+        previous_date = activity.date_time.date()
+        consecutive_days = max(consecutive_days, current_streak)
+
+    return consecutive_days
+
+def calculate_current_week_start(user, challenge):
+    today = now().date()
+    start_of_week = today - timedelta(days=today.weekday())
+    return start_of_week
+
+def calculate_total_stars(user, challenge):
+    # Assuming stars are awarded based on some criteria, e.g., every 1000 calories burned = 1 star
+    total_calories = calculate_current_total_challenge_type_display(user, challenge)
+    stars = total_calories // 1000  # Example: 1 star for every 1000 calories
+    return stars

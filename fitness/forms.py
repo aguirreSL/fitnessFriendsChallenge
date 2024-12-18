@@ -82,17 +82,31 @@ class FitnessGroupForm(forms.ModelForm):
 class ChallengeForm(forms.ModelForm):
     class Meta:
         model = Challenge
-        fields = ['name', 'fitness_group', 'challenge_type', 'target_amount', 'start_date', 'end_date']
+        fields = ['name', 'description', 'fitness_group', 'challenge_type', 'target_amount', 'start_date', 'end_date']
         widgets = {
             'start_date': DateInput(attrs={'type': 'date'}),
             'end_date': DateInput(attrs={'type': 'date'}),
         }
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
-        super(ChallengeForm, self).__init__(*args, **kwargs)
-        if user:
-            self.fields['fitness_group'].queryset = user.fitness_groups.all()
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            challenge = self.instance
+            placeholder_text = (
+                f"The participants aim for {challenge.target_amount} amount of "
+                f"{challenge.get_challenge_type_display()} combined. "
+                f"The timeframe is from {challenge.start_date} to {challenge.end_date}."
+            )
+            if not self.instance.description:
+                self.fields['description'].initial = placeholder_text
+            self.fields['description'].widget.attrs['placeholder'] = placeholder_text
+            self.placeholder_text = placeholder_text  # Store the placeholder text for later use
+
+    def clean_description(self):
+        description = self.cleaned_data.get('description')
+        if description == self.placeholder_text:
+            return ''  # Return an empty string if the description is the same as the placeholder
+        return description
 
 class InvitationForm(forms.ModelForm):
     class Meta:
@@ -113,11 +127,15 @@ class InvitationForm(forms.ModelForm):
             self.fields['invitee'].queryset = User.objects.exclude(id__in=group.members.all())
             self.fields['challenge'].queryset = Challenge.objects.filter(fitness_group=group)
 
+        if challenge:
+            self.fields['challenge'].initial = challenge
+            self.fields['invitee'].queryset = User.objects.exclude(id__in=challenge.users.all())
+
         if self.instance.pk:  # Edit case
-            if self.instance.invite_type == InviteType.CHALLENGE_INVITE:
+            if self.instance.invite_type == 'challenge':
                 self.fields['invitee'].queryset = User.objects.exclude(id__in=self.instance.challenge.users.all())
                 self.fields['challenge'].queryset = Challenge.objects.filter(fitness_group=self.instance.fitness_group)
-            elif self.instance.invite_type == InviteType.GROUP_INVITE:
+            elif self.instance.invite_type == 'fitnessGroup':
                 self.fields['invitee'].queryset = User.objects.exclude(id__in=self.instance.fitness_group.members.all())
 
     def clean(self):
@@ -127,7 +145,7 @@ class InvitationForm(forms.ModelForm):
         challenge = cleaned_data.get('challenge')
         invitee = cleaned_data.get('invitee')
 
-        if invite_type == InviteType.CHALLENGE_INVITE and challenge:
+        if invite_type == 'challenge' and challenge:
             if not fitness_group.members.filter(id=invitee.id).exists():
                 raise forms.ValidationError('The selected user is not a member of the group. A combined invite will be sent.')
 

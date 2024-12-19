@@ -12,7 +12,9 @@
                     <h2 class="card-title">Members</h2>
                     <ul class="list-group">
                         {% for member in group.members.all %}
-                            <li class="list-group-item">{{ member.username }}</li>
+                            <li class="list-group-item">
+                                <a href="{% url 'user_profile' user_id=member.id %}">{{ member.username }}</a>
+                            </li>
                         {% empty %}
                             <li class="list-group-item">No members yet.</li>
                         {% endfor %}

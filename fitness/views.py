@@ -241,6 +241,20 @@ def edit_profile(request):
     }
     return render(request, 'fitness/edit_profile.html', context)
 
+def user_profile(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    user_profile = get_object_or_404(UserProfile, user=user)
+    groups = FitnessGroup.objects.filter(members=user)
+    challenges = Challenge.objects.filter(fitness_group__members=user)
+
+    context = {
+        'user': user,
+        'user_profile': user_profile,
+        'fitness_groups': groups,
+        'challenges': challenges,
+    }
+    return render(request, 'fitness/user_profile.html', context)
+
 def create_group(request):
     if request.method == 'POST':
         form = FitnessGroupForm(request.POST)

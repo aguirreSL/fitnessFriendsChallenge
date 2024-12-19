@@ -15,6 +15,7 @@ urlpatterns = [
     path('weight/', views.weight_tracker, name='weight_tracker'),
     path('profile/', views.profile, name='profile'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
+    path('user/<int:user_id>/', views.user_profile, name='user_profile'),  # New URL pattern for user profiles
     path('create_group/', views.create_group, name='create_group'),
     path('fitness_groups/', views.group_list, name='group_list'),
     path('invitations/<int:invitation_id>/respond/<str:response>/', views.respond_invitation, name='respond_invitation'),

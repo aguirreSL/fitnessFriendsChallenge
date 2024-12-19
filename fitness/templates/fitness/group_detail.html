@@ -4,133 +4,165 @@
 <div class="container mt-5">
     <h1 class="text-center mb-4">{{ group.name }} Details</h1>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <h2 class="card-title">Members</h2>
-            <ul class="list-group">
-                {% for member in group.members.all %}
-                    <li class="list-group-item">{{ member.username }}</li>
-                {% empty %}
-                    <li class="list-group-item">No members yet.</li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <h2 class="card-title">Challenges</h2>
-            <ul class="list-group">
-                {% for challenge in group.challenge_set.all %}
-                    <li class="list-group-item">{{ challenge.name }} ({{ challenge.challenge_type }})</li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <h2 class="card-title">Send Group Invitation</h2>
-            <form method="POST" action="{% url 'send_group_invitation' group.id %}">
-                {% csrf_token %}
-                <input type="hidden" name="invite_type" value="group">
-                
-                <div class="mb-3">
-                    <label for="invitee" class="form-label">Invite user:</label>
-                    <select name="invitee" id="invitee" class="form-select">
-                        {% for user in non_members %}
-                            <option value="{{ user.id }}">{{ user.username }}</option>
+    <div class="row">
+        <!-- Members Section -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="card-title">Members</h2>
+                    <ul class="list-group">
+                        {% for member in group.members.all %}
+                            <li class="list-group-item">{{ member.username }}</li>
                         {% empty %}
-                            <option value="">No users available</option>
+                            <li class="list-group-item">No members yet.</li>
                         {% endfor %}
-                    </select>
+                    </ul>
                 </div>
-
-                <button type="submit" class="btn btn-custom btn-block">Send Invitation</button>
-            </form>
+                {% if user in group.admins.all %}
+                    <div class="card-footer">
+                        <a href="{% url 'manage_admins' fitness_group_id=group.id %}" class="btn btn-warning btn-block">Manage Admins</a>
+                    </div>
+                {% endif %}
+            </div>
         </div>
-    </div>
 
-    <!-- New Section for Sending Challenge Invitations -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <h2 class="card-title">Send Challenge Invitation</h2>
-            <form method="POST" action="{% url 'send_challenge_invitation' group.id %}">
-                {% csrf_token %}
-                <input type="hidden" name="invite_type" value="challenge">
-                
-                <div class="mb-3">
-                    <label for="challenge" class="form-label">Select Challenge:</label>
-                    <select name="challenge" id="challenge" class="form-select">
+        <!-- Challenges Section -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="card-title">Challenges</h2>
+                    <ul class="list-group">
                         {% for challenge in group.challenge_set.all %}
-                            <option value="{{ challenge.id }}">{{ challenge.name }}</option>
-                        {% empty %}
-                            <option value="">No challenges available</option>
+                            <li class="list-group-item">{{ challenge.name }} ({{ challenge.challenge_type }})</li>
                         {% endfor %}
-                    </select>
+                    </ul>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <div class="mb-3">
-                    <label for="invitee" class="form-label">Invite user:</label>
-                    <select name="invitee" id="invitee" class="form-select">
-                        {% for user in non_members %}
-                            <option value="{{ user.id }}">{{ user.username }}</option>
-                        {% empty %}
-                            <option value="">No users available</option>
+    <div class="row">
+        <!-- Send Group Invitation Section -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="card-title">Send Group Invitation</h2>
+                    <form method="POST" action="{% url 'send_group_invitation' group.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="invite_type" value="group">
+
+                        <div class="mb-3">
+                            <label for="invitee" class="form-label">Invite user:</label>
+                            <select name="invitee" id="invitee" class="form-select">
+                                {% for user in non_members %}
+                                    <option value="{{ user.id }}">{{ user.username }}</option>
+                                {% empty %}
+                                    <option value="">No users available</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-custom btn-block">Send Invitation</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Send Challenge Invitation Section -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="card-title">Send Challenge Invitation</h2>
+                    <form method="POST" action="{% url 'send_challenge_invitation' group.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="invite_type" value="challenge">
+
+                        <div class="mb-3">
+                            <label for="challenge" class="form-label">Select Challenge:</label>
+                            <select name="challenge" id="challenge" class="form-select">
+                                {% for challenge in group.challenge_set.all %}
+                                    <option value="{{ challenge.id }}">{{ challenge.name }}</option>
+                                {% empty %}
+                                    <option value="">No challenges available</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="invitee" class="form-label">Invite user:</label>
+                            <select name="invitee" id="invitee" class="form-select">
+                                {% for user in non_members %}
+                                    <option value="{{ user.id }}">{{ user.username }}</option>
+                                {% empty %}
+                                    <option value="">No users available</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-custom btn-block">Send Invitation</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Group Visibility Section -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="card-title">Group Visibility</h2>
+                    <form method="POST" action="{% url 'toggle_group_visibility' group.id %}">
+                        {% csrf_token %}
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="is_public" name="is_public" {% if group.is_public %}checked{% endif %}>
+                            <label class="form-check-label" for="is_public">Public</label>
+                        </div>
+                        <button type="submit" class="btn btn-custom btn-block mt-3">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Request to Join Group Section -->
+        {% if user not in group.members.all %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="card-title">Request to Join Group</h2>
+                    <form method="POST" action="{% url 'request_to_join_group' group.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-custom btn-block">Request to Join</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="row">
+        <!-- Pending Join Requests Section -->
+        <div class="col-md-12 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="card-title">Pending Join Requests</h2>
+                    <ul class="list-group">
+                        {% for invitation in pending_invitations %}
+                            <li class="list-group-item">
+                                {{ invitation.sender.username }} has requested to join the group.
+                                <form method="POST" action="{% url 'approve_join_request' invitation.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                </form>
+                                <form method="POST" action="{% url 'reject_join_request' invitation.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                </form>
+                            </li>
                         {% endfor %}
-                    </select>
+                    </ul>
                 </div>
-
-                <button type="submit" class="btn btn-custom btn-block">Send Invitation</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- New Section for Public/Private Switcher -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <h2 class="card-title">Group Visibility</h2>
-            <form method="POST" action="{% url 'toggle_group_visibility' group.id %}">
-                {% csrf_token %}
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="is_public" name="is_public" {% if group.is_public %}checked{% endif %}>
-                    <label class="form-check-label" for="is_public">Public</label>
-                </div>
-                <button type="submit" class="btn btn-custom btn-block mt-3">Save Changes</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- New Section for Request to Join Group -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <h2 class="card-title">Request to Join Group</h2>
-            <form method="POST" action="{% url 'request_to_join_group' group.id %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-custom btn-block">Request to Join</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- New Section for Approving Join Requests -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <h2 class="card-title">Pending Join Requests</h2>
-            <ul class="list-group">
-                {% for invitation in pending_invitations %}
-                    <li class="list-group-item">
-                        {{ invitation.sender.username }} has requested to join the group.
-                        <form method="POST" action="{% url 'approve_join_request' invitation.id %}" class="d-inline">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
-                        </form>
-                        <form method="POST" action="{% url 'reject_join_request' invitation.id %}" class="d-inline">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
-                        </form>
-                    </li>
-                {% endfor %}
-            </ul>
+            </div>
         </div>
     </div>
 </div>

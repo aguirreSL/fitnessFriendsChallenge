@@ -18,11 +18,11 @@ class FitnessActivity(models.Model):
     intensity = models.CharField(max_length=50)  # e.g., moderate, high
     calories_burned = models.IntegerField()
     date_time = models.DateTimeField()
-    # Add TSS field
-    tss = models.FloatField(null=True, blank=True)  # TSS can be a float value
+    tss = models.FloatField(null=True, blank=True)
+    distance = models.FloatField(null=True, blank=True)  # New optional distance field
 
     def __str__(self):
-        return f"{self.activity_type} on {self.date_time.strftime('%Y-%m-%d')}"
+        return f"{self.activity_type} on {self.date_time.strftime('%d-%m-%Y')}"
 
 
 class UserProfile(models.Model):

@@ -1,0 +1,14 @@
+{% extends "fitness/base.html" %}
+
+{% block title %}Confirm Delete{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Are you sure you want to delete the challenge "{{ challenge.name }}"?</h2>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, delete</button>
+        <a href="{% url 'group_detail' fitness_group_id=challenge.fitness_group.id %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

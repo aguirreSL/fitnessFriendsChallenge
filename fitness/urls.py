@@ -1,6 +1,6 @@
 from django.urls import path
 from django.contrib.auth.views import LoginView
-from .views import add_activity, custom_logout, profile, create_group, group_list, create_challenge, challenge_list, weight_tracker, challenge_list, create_challenge, edit_challenge, send_invitation, invitations_list, respond_invitation, group_detail#,,add_diet_log
+from .views import add_activity, custom_logout, profile, create_group, group_list, create_challenge, challenge_list, weight_tracker, challenge_list, create_challenge, edit_challenge, send_invitation, invitations_list, respond_invitation, group_detail, delete_challenge, manage_admins#,,add_diet_log
 from . import views
 
 urlpatterns = [
@@ -35,4 +35,6 @@ urlpatterns = [
     path('challenge/<int:challenge_id>/', views.challenge_detail, name='challenge_detail'),
     path('invitation/<int:invitation_id>/approve-challenge/', views.approve_challenge_join_request, name='approve_challenge_join_request'),
     path('invitation/<int:invitation_id>/reject-challenge/', views.reject_challenge_join_request, name='reject_challenge_join_request'),
+    path('challenge/<int:challenge_id>/delete/', delete_challenge, name='delete_challenge'),
+    path('group/<int:fitness_group_id>/manage_admins/', manage_admins, name='manage_admins'),
 ]

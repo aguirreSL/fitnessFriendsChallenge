@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import UserProfile, FitnessActivity, WeightEntry, FitnessGroup, Challenge, LeaderboardEntry, Invitation, InviteType #,DietaryLog
 from django.utils import timezone
+from django.utils.timezone import make_aware, is_naive
 from datetime import datetime
 from django.forms.widgets import DateInput #DateInput to be able to use the little calendar :)
 
@@ -41,7 +42,7 @@ class UserRegisterForm(UserCreationForm):
 class ActivityForm(forms.ModelForm):
     class Meta:
         model = FitnessActivity
-        fields = ['activity_type', 'duration', 'calories_burned', 'date_time', 'tss']
+        fields = ['activity_type', 'duration', 'calories_burned', 'date_time', 'tss', 'distance']
         widgets = {
             'date_time': forms.DateInput(format='%d/%m/%Y', attrs={
                 'type': 'date',
@@ -54,7 +55,11 @@ class ActivityForm(forms.ModelForm):
         self.fields['date_time'].initial = datetime.now().strftime('%d-%m-%Y')  # Default value as today
         self.fields['tss'].label = 'Training Stress Score TSS'
 
-
+    def clean_date_time(self):
+        date_time = self.cleaned_data['date_time']
+        if is_naive(date_time):
+            return make_aware(date_time)
+        return date_time
 
 
 # class DietaryLogForm(forms.ModelForm):
@@ -90,17 +95,17 @@ class ChallengeForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.instance.pk:
-            challenge = self.instance
-            placeholder_text = (
-                f"The participants aim for {challenge.target_amount} amount of "
-                f"{challenge.get_challenge_type_display()} combined. "
-                f"The timeframe is from {challenge.start_date} to {challenge.end_date}."
-            )
-            if not self.instance.description:
-                self.fields['description'].initial = placeholder_text
-            self.fields['description'].widget.attrs['placeholder'] = placeholder_text
-            self.placeholder_text = placeholder_text  # Store the placeholder text for later use
+        challenge = self.instance
+        placeholder_text = (
+            f"The participants aim for {challenge.target_amount} amount of "
+            f"{challenge.get_challenge_type_display()} combined. "
+            f"The timeframe is from {challenge.start_date} to {challenge.end_date}."
+        )
+        self.placeholder_text = placeholder_text  # Store the placeholder text for later use
+
+        if not self.instance.pk and not self.fields['description'].initial:
+            self.fields['description'].initial = placeholder_text
+        self.fields['description'].widget.attrs['placeholder'] = placeholder_text
 
     def clean_description(self):
         description = self.cleaned_data.get('description')
@@ -150,3 +155,11 @@ class InvitationForm(forms.ModelForm):
                 raise forms.ValidationError('The selected user is not a member of the group. A combined invite will be sent.')
 
         return cleaned_data
+
+class FitnessGroupAdminForm(forms.ModelForm):
+    class Meta:
+        model = FitnessGroup
+        fields = ['admins']
+        widgets = {
+            'admins': forms.CheckboxSelectMultiple,
+        }

@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import FitnessActivity, WeightEntry, UserProfile, FitnessGroup, Challenge, LeaderboardEntry, Invitation
-from .forms import UserRegisterForm, ActivityForm, WeightEntryForm, FitnessGroupForm, ChallengeForm, InvitationForm #,DietaryLogForm
+from .forms import UserRegisterForm, ActivityForm, WeightEntryForm, FitnessGroupForm, ChallengeForm, InvitationForm, FitnessGroupAdminForm #,DietaryLogForm
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Q  #added to build home
-from django.utils.timezone import now, timedelta, make_aware #added to build home
+from django.utils.timezone import now, timedelta, make_aware, is_naive #added to build home
 from django.contrib.auth.models import User  # Import the User model
 from datetime import datetime
 import logging
@@ -88,7 +88,12 @@ def home(request):
                 leaderboard_data = []
 
     else:
-        selected_challenge = None
+        # Select the most recent challenge by start date if no challenge is selected
+        if active_challenges.exists():
+            selected_challenge = active_challenges.order_by('-start_date').first()
+        else:
+            selected_challenge = None
+
         leaderboard_data = []
         one_week_ago = now() - timedelta(days=7)
 
@@ -131,13 +136,14 @@ def home(request):
     })
 
 
-
 def add_activity(request):
     if request.method == 'POST':
         form = ActivityForm(request.POST)
         if form.is_valid():
             activity = form.save(commit=False)
             activity.user = request.user
+            if is_naive(activity.date_time):
+                activity.date_time = make_aware(activity.date_time)  # Make datetime aware only if it's naive
             activity.save()
             return redirect('activity_list')
     else:
@@ -249,13 +255,14 @@ def group_list(request):
 @login_required
 def create_challenge(request):
     if request.method == 'POST':
-        form = ChallengeForm(request.POST, user=request.user)
+        form = ChallengeForm(request.POST)
         if form.is_valid():
-            challenge = form.save()  # Save the form and get the challenge instance
+            challenge = form.save(commit=False)
+            challenge.save()
             challenge.users.add(request.user)  # Add the current user to the challenge's users
             return redirect('challenge_list')
     else:
-        form = ChallengeForm(user=request.user)
+        form = ChallengeForm()
     return render(request, 'fitness/challenge_form.html', {'form': form})
 
 def challenge_list(request):
@@ -502,7 +509,7 @@ def calculate_week_challenge_type_display(user, challenge):
     if challenge.challenge_type == 'CAL':
         total = activities.aggregate(Sum('calories_burned'))['calories_burned__sum'] or 0
     elif challenge.challenge_type == 'KM':
-        total = activities.aggregate(Sum('distance'))['distance__sum'] or 0  # Assuming you have a distance field
+        total = activities.aggregate(Sum('distance'))['distance__sum'] or 0
     elif challenge.challenge_type == 'TSS':
         total = activities.aggregate(Sum('tss'))['tss__sum'] or 0
     else:
@@ -514,7 +521,7 @@ def calculate_current_total_challenge_type_display(user, challenge):
     if challenge.challenge_type == 'CAL':
         total = activities.aggregate(Sum('calories_burned'))['calories_burned__sum'] or 0
     elif challenge.challenge_type == 'KM':
-        total = activities.aggregate(Sum('distance'))['distance__sum'] or 0  # Assuming you have a distance field
+        total = activities.aggregate(Sum('distance'))['distance__sum'] or 0
     elif challenge.challenge_type == 'TSS':
         total = activities.aggregate(Sum('tss'))['tss__sum'] or 0
     else:
@@ -550,3 +557,35 @@ def calculate_total_stars(user, challenge):
     total_calories = calculate_current_total_challenge_type_display(user, challenge)
     stars = total_calories // 1000  # Example: 1 star for every 1000 calories
     return stars
+
+def is_group_admin(user, group_id):
+    group = FitnessGroup.objects.get(id=group_id)
+    return user in group.admins.all()
+
+@login_required
+def delete_challenge(request, challenge_id):
+    challenge = get_object_or_404(Challenge, id=challenge_id)
+    group_id = challenge.fitness_group.id
+
+    if not is_group_admin(request.user, group_id):
+        return redirect('group_detail', fitness_group_id=group_id)
+
+    if request.method == 'POST':
+        challenge.delete()
+        return redirect('group_detail', fitness_group_id=group_id)
+    return render(request, 'fitness/confirm_delete.html', {'challenge': challenge})
+
+@login_required
+def manage_admins(request, fitness_group_id):
+    if not is_group_admin(request.user, fitness_group_id):
+        return redirect('group_detail', fitness_group_id=fitness_group_id)
+
+    group = get_object_or_404(FitnessGroup, id=fitness_group_id)
+    if request.method == 'POST':
+        form = FitnessGroupAdminForm(request.POST, instance=group)
+        if form.is_valid():
+            form.save()
+            return redirect('group_detail', fitness_group_id=group.id)
+    else:
+        form = FitnessGroupAdminForm(instance=group)
+    return render(request, 'fitness/manage_admins.html', {'form': form, 'group': group})

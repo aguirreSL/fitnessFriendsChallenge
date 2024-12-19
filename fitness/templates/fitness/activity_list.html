@@ -18,6 +18,9 @@
                                     <th scope="col" onclick="sortTable(2)">Calories</th>
                                     <th scope="col" onclick="sortTable(3)">Date</th>
                                     <th scope="col" onclick="sortTable(4)">TSS</th>
+                                    <th scope="col" onclick="sortTable(5)">Perceived Effort (1-10)</th>
+                                    <th scope="col" onclick="sortTable(6)">Distance</th>
+                                    <th scope="col">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -28,13 +31,19 @@
                                         <td>{{ activity.calories_burned }}</td>
                                         <td>{{ activity.date_time }}</td>
                                         <td>{{ activity.tss }}</td>
+                                        <td>{{ activity.perceived_effort }}</td>
+                                        <td>{{ activity.distance }}</td>
                                         <td>
                                             <a href="{% url 'edit_activity' activity.id %}" class="btn btn-sm btn-primary">Edit</a>
+                                            <form action="{% url 'delete_activity' activity.id %}" method="post" style="display:inline;">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                            </form>
                                         </td>
                                     </tr>
                                 {% empty %}
                                     <tr>
-                                        <td colspan="5" class="text-center">No activities recorded.</td>
+                                        <td colspan="8" class="text-center">No activities recorded.</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>

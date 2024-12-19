@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import UserProfile, FitnessActivity, WeightEntry, FitnessGroup, Challenge, LeaderboardEntry, Invitation, InviteType #,DietaryLog
+from .models import UserProfile, FitnessActivity, WeightEntry, FitnessGroup, Challenge, Invitation #,DietaryLog
 from django.utils import timezone
 from django.utils.timezone import make_aware, is_naive
 from datetime import datetime
@@ -9,9 +9,8 @@ from django.forms.widgets import DateInput #DateInput to be able to use the litt
 
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField()
-    date_of_birth = forms.DateField(help_text='Required. Format: YYYY-MM-DD', widget=forms.DateInput(attrs={'type': 'date'}),
-                                    input_formats=['%Y-%m-%d'])
-
+    date_of_birth = forms.DateField(help_text='Required. Format: DD-MM-YYYY', widget=forms.DateInput(attrs={'type': 'date'}),
+                                    input_formats=['%d-%m-%Y'])
     height = forms.IntegerField(help_text='Height in centimeters')
     weight = forms.IntegerField(help_text='Weight in kilograms')
     fitness_level = forms.IntegerField(
@@ -20,13 +19,19 @@ class UserRegisterForm(UserCreationForm):
         max_value=10,
         widget=forms.NumberInput(attrs={'class': 'form-control'})
     )
+    first_name = forms.CharField(max_length=30, required=False, help_text='Optional.')
+    last_name = forms.CharField(max_length=30, required=False, help_text='Optional.')
+    bio = forms.CharField(widget=forms.Textarea, required=False, help_text='Tell us a bit about yourself.')
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password1', 'password2', 'date_of_birth', 'height', 'weight', 'fitness_level']
+        fields = ['username', 'email', 'password1', 'password2', 'date_of_birth', 'height', 'weight', 'fitness_level', 'first_name', 'last_name', 'bio']
 
     def save(self, commit=True):
         user = super().save(commit=False)
+        user.email = self.cleaned_data['email']
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name = self.cleaned_data['last_name']
         if commit:
             user.save()
             UserProfile.objects.create(
@@ -34,7 +39,8 @@ class UserRegisterForm(UserCreationForm):
                 date_of_birth=self.cleaned_data['date_of_birth'],
                 height=self.cleaned_data['height'],
                 weight=self.cleaned_data['weight'],
-                fitness_level=self.cleaned_data['fitness_level']
+                fitness_level=self.cleaned_data['fitness_level'],
+                bio=self.cleaned_data['bio']
             )
         return user
 
@@ -42,18 +48,19 @@ class UserRegisterForm(UserCreationForm):
 class ActivityForm(forms.ModelForm):
     class Meta:
         model = FitnessActivity
-        fields = ['activity_type', 'duration', 'calories_burned', 'date_time', 'tss', 'distance']
+        fields = ['activity_type', 'duration', 'calories_burned', 'date_time', 'tss', 'distance', 'perceived_effort']
         widgets = {
             'date_time': forms.DateInput(format='%d/%m/%Y', attrs={
                 'type': 'date',
                 'placeholder': 'dd/mm/yyyy'  # Placeholder
             }),
+            'perceived_effort': forms.NumberInput(attrs={'min': 1, 'max': 10})  # Ensure it's between 1 and 10
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['date_time'].initial = datetime.now().strftime('%d-%m-%Y')  # Default value as today
-        self.fields['tss'].label = 'Training Stress Score TSS'
+        self.fields['tss'].label = 'Training Stress Score (TSS)'
 
     def clean_date_time(self):
         date_time = self.cleaned_data['date_time']

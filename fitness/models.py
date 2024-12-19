@@ -1,29 +1,36 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.utils.timezone import now
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator
+
+
 
 class FitnessActivity(models.Model):
     ACTIVITY_CHOICES = [
         ('RUN', 'Running'),
         ('YOG', 'Yoga'),
         ('CYC', 'Cycling'),
-        ('WEI', 'Wheight Lift'),
+        ('STR', 'Strength'),
+        ('WAL', 'Walk'),
+        ('IBK', 'Indoor Bike'),
+        ('TRE', 'Treadmill'),
+        ('CAR', 'Cardio Trainning'),
         # Add more activities as needed
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     activity_type = models.CharField(max_length=3, choices=ACTIVITY_CHOICES)
-    duration = models.IntegerField()  # e.g., 30 minutes
-    intensity = models.CharField(max_length=50)  # e.g., moderate, high
-    calories_burned = models.IntegerField()
-    date_time = models.DateTimeField()
+    duration = models.IntegerField(validators=[MaxValueValidator(1440)])  # in minutes max = 24 hours 1440 minutes
+    perceived_effort = models.IntegerField(default=5)  # Change to perceived_effort
+    calories_burned = models.IntegerField(null=True, blank=True)
+    date_time = models.DateTimeField(default=now)
     tss = models.FloatField(null=True, blank=True)
     distance = models.FloatField(null=True, blank=True)  # New optional distance field
 
     def __str__(self):
         return f"{self.activity_type} on {self.date_time.strftime('%d-%m-%Y')}"
-
 
 class UserProfile(models.Model):
     """
@@ -31,7 +38,6 @@ class UserProfile(models.Model):
         Extend the default User model using a One-to-One link.
         Fields: date of birth, height, weight, fitness level, etc.
     """
-
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     date_of_birth = models.DateField()
     height = models.IntegerField()

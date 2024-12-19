@@ -7,6 +7,8 @@
             <h2 class="text-center">{{ user.username }}'s Profile</h2>
         </div>
         <div class="card-body">
+            <p><strong>Name:</strong> {{ user.last_name }}</p>
+            <p><strong>Last Name:</strong> {{ user.first_name }}</p>
             <p><strong>Email:</strong> {{ user.email }}</p>
             <p><strong>Date of Birth:</strong> {{ user_profile.date_of_birth }}</p>
             <p><strong>Height:</strong> {{ user_profile.height }} cm</p>
@@ -22,7 +24,7 @@
             {% else %}
                 <p><strong>Not in a group yet</strong></p>
             {% endif %}
-            <!-- Add more fields as needed -->
+            <p><strong>Bio:</strong> {{ user_profile.bio }}</p>
         </div>
     </div>
 </div>

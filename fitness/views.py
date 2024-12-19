@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import FitnessActivity, WeightEntry, UserProfile, FitnessGroup, Challenge, Invitation
-from .forms import UserRegisterForm, ActivityForm, WeightEntryForm, FitnessGroupForm, ChallengeForm, InvitationForm, FitnessGroupAdminForm #,DietaryLogForm
+from .models import FitnessActivity, WeightEntry, UserProfile, FitnessGroup, Challenge, Invitation, InviteType
+from .forms import UserRegisterForm, ActivityForm, WeightEntryForm, FitnessGroupForm, ChallengeForm, InvitationForm, FitnessGroupAdminForm  #,DietaryLogForm
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Q
@@ -15,12 +15,22 @@ def activity_list(request):
     activities = FitnessActivity.objects.filter(user=request.user)
     return render(request, 'fitness/activity_list.html', {'activities': activities})
 
+@login_required
+def delete_activity(request, activity_id):
+    activity = get_object_or_404(FitnessActivity, id=activity_id, user=request.user)
+    if request.method == 'POST':
+        activity.delete()
+        return redirect('activity_list')
+    return render(request, 'fitness/confirm_delete_activity.html', {'activity': activity})
+
 def custom_logout(request):
     logout(request)
     return redirect('login')
+
 # def diet_log(request):
 #     diet_logs = DietaryLog.objects.filter(user=request.user)
 #     return render(request, 'fitness/diet_log.html', {'diet_logs': diet_logs})
+
 def register(request):
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
@@ -607,33 +617,6 @@ def calculate_current_week_start(user, challenge):
     start_of_week = today - timedelta(days=today.weekday())
     return start_of_week
 
-def calculate_total_stars(user, challenge):
-    # Calculate the total distance and duration for the user within the challenge period
-    start_date = challenge.start_date
-    end_date = challenge.end_date
-    activities = FitnessActivity.objects.filter(user=user, date_time__range=[start_date, end_date])
-
-    total_distance = activities.aggregate(Sum('distance'))['distance__sum'] or 0
-    total_duration = activities.aggregate(Sum('duration'))['duration__sum'] or 0  # Assuming duration is in minutes
-
-    # Calculate stars based on distance and duration
-    stars_from_distance = total_distance // 169
-    stars_from_duration = (total_duration // 60) // 21  # Convert minutes to hours and calculate stars
-
-    total_stars = stars_from_distance + stars_from_duration
-
-    # Calculate bonuses
-    # Find the top performer in distance
-    top_distance_user = FitnessActivity.objects.filter(date_time__range=[start_date, end_date]).values('user').annotate(total_distance=Sum('distance')).order_by('-total_distance').first()
-    if top_distance_user and top_distance_user['user'] == user.id:
-        total_stars += 1
-
-    # Find the top performer in duration
-    top_duration_user = FitnessActivity.objects.filter(date_time__range=[start_date, end_date]).values('user').annotate(total_duration=Sum('duration')).order_by('-total_duration').first()
-    if top_duration_user and top_duration_user['user'] == user.id:
-        total_stars += 1
-
-    return total_stars
 
 def is_group_admin(user, group_id):
     group = FitnessGroup.objects.get(id=group_id)

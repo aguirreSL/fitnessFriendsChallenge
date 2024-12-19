@@ -68,6 +68,36 @@ class ActivityForm(forms.ModelForm):
             return make_aware(date_time)
         return date_time
 
+class UserProfileForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=30, required=False, help_text='Optional.')
+    last_name = forms.CharField(max_length=30, required=False, help_text='Optional.')
+    email = forms.EmailField(required=True)
+    date_of_birth = forms.DateField(
+        help_text='Required. Format: DD-MM-YYYY',
+        widget=forms.DateInput(attrs={'type': 'date', 'placeholder': 'dd-mm-yyyy'}),
+        input_formats=['%d-%m-%Y']
+    )
+
+    class Meta:
+        model = UserProfile
+        fields = ['first_name', 'last_name', 'email', 'date_of_birth', 'height', 'weight', 'fitness_level', 'bio', 'display_weight']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['first_name'].initial = self.instance.user.first_name
+        self.fields['last_name'].initial = self.instance.user.last_name
+        self.fields['email'].initial = self.instance.user.email
+
+    def save(self, commit=True):
+        user_profile = super().save(commit=False)
+        user = user_profile.user
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name = self.cleaned_data['last_name']
+        user.email = self.cleaned_data['email']
+        if commit:
+            user.save()
+            user_profile.save()
+        return user_profile
 
 # class DietaryLogForm(forms.ModelForm):
 #     class Meta:

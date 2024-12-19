@@ -4,7 +4,9 @@ register = template.Library()
 
 @register.filter(name='add_class')
 def add_class(value, arg):
-    return value.as_widget(attrs={'class': arg})
+    if hasattr(value, 'as_widget'):
+        return value.as_widget(attrs={'class': arg})
+    return value  # or handle the string case as needed
 
 @register.filter
 def stars(value):

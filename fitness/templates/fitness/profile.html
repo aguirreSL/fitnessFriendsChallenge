@@ -1,30 +1,43 @@
 {% extends 'fitness/base.html' %}
+{% load custom_filters %}
+{% load static %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
 <div class="container mt-5">
-    <div class="card">
-        <div class="card-header bg-primary text-white">
-            <h2 class="text-center">{{ user.username }}'s Profile</h2>
-        </div>
-        <div class="card-body">
-            <p><strong>Name:</strong> {{ user.last_name }}</p>
-            <p><strong>Last Name:</strong> {{ user.first_name }}</p>
-            <p><strong>Email:</strong> {{ user.email }}</p>
-            <p><strong>Date of Birth:</strong> {{ user_profile.date_of_birth }}</p>
-            <p><strong>Height:</strong> {{ user_profile.height }} cm</p>
-            <p><strong>Weight:</strong> {{ user_profile.weight }} kg</p>
-            <p><strong>Fitness Level:</strong> {{ user_profile.fitness_level }}</p>
-            {% if fitness_groups %}
-                <p><strong>Groups:</strong></p>
-                <ul>
-                    {% for group in fitness_groups %}
-                        <li>{{ group.name }}</li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p><strong>Not in a group yet</strong></p>
-            {% endif %}
-            <p><strong>Bio:</strong> {{ user_profile.bio }}</p>
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header text-center">
+                    <h2>{{ user.username }}'s Profile</h2>
+                </div>
+                <div class="card-body">
+                    <p><strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+                    <p><strong>Date of Birth:</strong> {{ user_profile.date_of_birth }}</p>
+                    <p><strong>Height:</strong> {{ user_profile.height }} cm</p>
+                    {% if user_profile.display_weight %}
+                        <p><strong>Weight:</strong> {{ user_profile.weight }} kg</p>
+                    {% endif %}
+                    <p><strong>Fitness Level:</strong> {{ user_profile.fitness_level }}</p>
+                    {% if fitness_groups %}
+                        <p><strong>Groups:</strong></p>
+                        <ul>
+                            {% for group in fitness_groups %}
+                                <li>{{ group.name }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p><strong>Not in a group yet</strong></p>
+                    {% endif %}
+                    <hr>
+                    <p><strong>Bio:</strong> {{ user_profile.bio }}</p>
+                    <hr>
+                    <div class="text-center">
+                        <a href="{% url 'edit_profile' %}" class="btn btn-primary">Update Profile</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

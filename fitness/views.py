@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import FitnessActivity, WeightEntry, UserProfile, FitnessGroup, Challenge, Invitation, InviteType
-from .forms import UserRegisterForm, ActivityForm, WeightEntryForm, FitnessGroupForm, ChallengeForm, InvitationForm, FitnessGroupAdminForm  #,DietaryLogForm
+from .forms import UserRegisterForm, UserProfileForm, ActivityForm, WeightEntryForm, FitnessGroupForm, ChallengeForm, InvitationForm, FitnessGroupAdminForm  #,DietaryLogForm
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Q
@@ -210,21 +210,36 @@ def weight_tracker(request):
     })
 
 
+@login_required
 def profile(request):
     user_profile = UserProfile.objects.get(user=request.user)
     groups = FitnessGroup.objects.filter(members=request.user)
-
-    # Update this query to reference the correct field name
     challenges = Challenge.objects.filter(fitness_group__members=request.user)
 
     context = {
         'user': request.user,
         'user_profile': user_profile,
         'fitness_groups': groups,
-        'challenges': challenges
+        'challenges': challenges,
     }
     return render(request, 'fitness/profile.html', context)
 
+@login_required
+def edit_profile(request):
+    user_profile = UserProfile.objects.get(user=request.user)
+
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, instance=user_profile)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')
+    else:
+        form = UserProfileForm(instance=user_profile)
+
+    context = {
+        'form': form
+    }
+    return render(request, 'fitness/edit_profile.html', context)
 
 def create_group(request):
     if request.method == 'POST':

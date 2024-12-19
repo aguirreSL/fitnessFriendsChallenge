@@ -41,9 +41,10 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     date_of_birth = models.DateField()
     height = models.IntegerField()
-    weight = models.IntegerField()
+    weight = models.IntegerField(null=True, blank=True)
     fitness_level = models.IntegerField()
     bio = models.TextField(blank=True)
+    display_weight = models.BooleanField(default=False)  # New field to store preference
 
     def __str__(self):
         return f"{self.user.username}'s profile"

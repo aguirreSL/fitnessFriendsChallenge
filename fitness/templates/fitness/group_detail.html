@@ -10,6 +10,7 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h2 class="card-title">Members</h2>
+                    {% if user in group.members.all %}
                     <ul class="list-group">
                         {% for member in group.members.all %}
                             <li class="list-group-item">
@@ -19,6 +20,9 @@
                             <li class="list-group-item">No members yet.</li>
                         {% endfor %}
                     </ul>
+                    {% else %}
+                     <label for="invitee" class="form-label">Only group members can see the list.</label>
+                    {% endif %}
                 </div>
                 {% if user in group.admins.all %}
                     <div class="card-footer">
@@ -42,7 +46,7 @@
             </div>
         </div>
     </div>
-
+    {% if user in group.members.all %}
     <div class="row">
         <!-- Send Group Invitation Section -->
         <div class="col-md-6 mb-4">
@@ -69,8 +73,9 @@
                 </div>
             </div>
         </div>
-
+        {% endif %}
         <!-- Send Challenge Invitation Section -->
+        {% if user in group.members.all %}
         <div class="col-md-6 mb-4">
             <div class="card h-100">
                 <div class="card-body">
@@ -106,10 +111,12 @@
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
 
     <div class="row">
         <!-- Group Visibility Section -->
+        {% if user in group.members.all %}
         <div class="col-md-6 mb-4">
             <div class="card h-100">
                 <div class="card-body">
@@ -125,6 +132,7 @@
                 </div>
             </div>
         </div>
+        {% endif %}
 
         <!-- Request to Join Group Section -->
         {% if user not in group.members.all %}
@@ -132,16 +140,20 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h2 class="card-title">Request to Join Group</h2>
-                    <form method="POST" action="{% url 'request_to_join_group' group.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-custom btn-block">Request to Join</button>
-                    </form>
+                    {% if user_requested_to_join %}
+                        <p class="text-center">Waiting for approval</p>
+                    {% else %}
+                        <form method="POST" action="{% url 'request_to_join_group' group.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-custom btn-block">Request to Join</button>
+                        </form>
+                    {% endif %}
                 </div>
             </div>
         </div>
         {% endif %}
     </div>
-
+    {% if user in group.members.all %}
     <div class="row">
         <!-- Pending Join Requests Section -->
         <div class="col-md-12 mb-4">
@@ -167,5 +179,6 @@
             </div>
         </div>
     </div>
+    {% endif %}
 </div>
 {% endblock %}

@@ -323,6 +323,7 @@ def group_detail(request, fitness_group_id):
     non_members = User.objects.exclude(id__in=members.values_list('id', flat=True))  # Non-members
 
     pending_invitations = Invitation.objects.filter(fitness_group=group, status='Pending')
+    user_requested_to_join = pending_invitations.filter(invitee=request.user).exists()
 
     if request.method == 'POST':
         form = InvitationForm(request.POST, group=group)
@@ -341,6 +342,7 @@ def group_detail(request, fitness_group_id):
         'non_members': non_members,  # Pass non-members to the template
         'form': form,
         'pending_invitations': pending_invitations,  # Pass pending invitations to the template
+        'user_requested_to_join': user_requested_to_join,  # Pass user request status to the template
     })
 
 @login_required
@@ -458,15 +460,20 @@ def toggle_group_visibility(request, fitness_group_id):
 @login_required
 def request_to_join_group(request, fitness_group_id):
     group = get_object_or_404(FitnessGroup, id=fitness_group_id)
+
     if request.method == 'POST':
+        # Create a new invitation
         Invitation.objects.create(
             invite_type='fitnessGroup',
             fitness_group=group,
             sender=request.user,
-            invitee=group.members.first(),  # Placeholder, not used for approval
+            invitee=request.user,  # Set the invitee to the current user
             message=f"{request.user.username} has requested to join the group."
         )
         return redirect('group_detail', fitness_group_id=fitness_group_id)
+
+    # If the request method is not POST, redirect to the group detail page
+    return redirect('group_detail', fitness_group_id=fitness_group_id)
 
 @login_required
 def approve_join_request(request, invitation_id):

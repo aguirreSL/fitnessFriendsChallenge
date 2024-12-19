@@ -1,11 +1,11 @@
 {% extends 'fitness/base.html' %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-4">
     <div class="row">
         <!-- My Groups Column -->
         <div class="col-md-6 mb-4">
-            <h2 class="text-center mb-4">My Groups</h2>
+            <h2 class="text-center mb-4">Joined Groups</h2>
             <div class="card">
                 <div class="card-body">
                     <ul class="list-group">
@@ -21,7 +21,20 @@
                 </div>
             </div>
         </div>
-        
+        <div class="col-md-6 md-4">
+            <h2 class="text-center mb-4">Create a new Fitness Friends Group</h2>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-custom btn-block w-100">Create Group</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
         <!-- Public Groups Column -->
         <div class="col-md-6 mb-4">
             <h2 class="text-center mb-4">Public Groups</h2>
@@ -31,7 +44,11 @@
                         {% for group in public_groups %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <a href="{% url 'group_detail' group.id %}" class="text-decoration-none">{{ group.name }}</a>
-                                <span class="badge bg-secondary rounded-pill">Join</span>
+                                {% if user not in group.members.all %}
+                                    <a href="{% url 'request_to_join_group' group.id %}" class="badge bg-info rounded-pill">Request to Join</a>
+                                {% else %}    
+                                    <span class="badge bg-primary rounded-pill">Member</span>
+                                {% endif %}
                             </li>
                         {% empty %}
                             <li class="list-group-item">No public groups found.</li>
@@ -50,7 +67,9 @@
                         {% for group in private_groups %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <a href="{% url 'group_detail' group.id %}" class="text-decoration-none">{{ group.name }}</a>
-                                <span class="badge bg-secondary rounded-pill">Join</span>
+                                {% if user not in group.members.all %}
+                                    <a href="{% url 'request_to_join_group' group.id %}" class="badge bg-info rounded-pill">Request to Join</a>
+                                {% endif %}
                             </li>
                         {% empty %}
                             <li class="list-group-item">No private groups found.</li>
@@ -61,20 +80,6 @@
         </div>
     </div>
 
-    <!-- Create New Group Section -->
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <h2 class="text-center mb-4">Create a new Fitness Friends Group</h2>
-            <div class="card mb-4">
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        {{ form.as_p }}
-                        <button type="submit" class="btn btn-custom btn-block w-100">Create Group</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+  
 </div>
 {% endblock %}

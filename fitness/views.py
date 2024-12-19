@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import FitnessActivity, WeightEntry, UserProfile, FitnessGroup, Challenge, LeaderboardEntry, Invitation
+from .models import FitnessActivity, WeightEntry, UserProfile, FitnessGroup, Challenge, Invitation
 from .forms import UserRegisterForm, ActivityForm, WeightEntryForm, FitnessGroupForm, ChallengeForm, InvitationForm, FitnessGroupAdminForm #,DietaryLogForm
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum, Q  #added to build home
+from django.db.models import Sum, Q
 from django.utils.timezone import now, timedelta, make_aware, is_naive #added to build home
 from django.contrib.auth.models import User  # Import the User model
 from datetime import datetime
@@ -488,6 +488,9 @@ def challenge_detail(request, challenge_id):
         consecutive_activities_log_days = calculate_consecutive_activities_log_days(user, challenge)
         current_week_start = calculate_current_week_start(user, challenge)
         total_stars = calculate_total_stars(user, challenge)
+        current_month_stars = calculate_month_stars(user, challenge, now().month)
+
+        monthly_stars = {f'{month}_stars': calculate_month_stars(user, challenge, month) for month in range(1, 13)}
 
         participants_data.append({
             'username': user.username,
@@ -496,12 +499,64 @@ def challenge_detail(request, challenge_id):
             'consecutive_activities_log_days': consecutive_activities_log_days,
             'current_week_start': current_week_start,
             'total_stars': total_stars,
+            'current_month_stars': current_month_stars,
+            **monthly_stars
         })
 
     return render(request, 'fitness/challenge_detail.html', {
         'challenge': challenge,
         'participants_data': participants_data,
     })
+
+def calculate_month_stars(user, challenge, month):
+    start_date = datetime(challenge.start_date.year, month, 1)
+    end_date = (start_date + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+
+    if is_naive(start_date):
+        start_date = make_aware(start_date)
+    if is_naive(end_date):
+        end_date = make_aware(end_date)
+
+    activities = FitnessActivity.objects.filter(user=user, date_time__range=[start_date, end_date])
+
+    total_distance = activities.aggregate(Sum('distance'))['distance__sum'] or 0
+    total_duration = activities.aggregate(Sum('duration'))['duration__sum'] or 0
+
+    stars_from_distance = total_distance // 169
+    stars_from_duration = (total_duration // 60) // 21
+
+    total_stars = stars_from_distance + stars_from_duration
+
+    return total_stars
+
+def calculate_total_stars(user, challenge):
+    start_date = datetime.combine(challenge.start_date, datetime.min.time())
+    end_date = datetime.combine(challenge.end_date, datetime.min.time())
+
+    if is_naive(start_date):
+        start_date = make_aware(start_date)
+    if is_naive(end_date):
+        end_date = make_aware(end_date)
+
+    activities = FitnessActivity.objects.filter(user=user, date_time__range=[start_date, end_date])
+
+    total_distance = activities.aggregate(Sum('distance'))['distance__sum'] or 0
+    total_duration = activities.aggregate(Sum('duration'))['duration__sum'] or 0
+
+    stars_from_distance = total_distance // 169
+    stars_from_duration = (total_duration // 60) // 21
+
+    total_stars = stars_from_distance + stars_from_duration
+
+    top_distance_user = FitnessActivity.objects.filter(date_time__range=[start_date, end_date]).values('user').annotate(total_distance=Sum('distance')).order_by('-total_distance').first()
+    if top_distance_user and top_distance_user['user'] == user.id:
+        total_stars += 1
+
+    top_duration_user = FitnessActivity.objects.filter(date_time__range=[start_date, end_date]).values('user').annotate(total_duration=Sum('duration')).order_by('-total_duration').first()
+    if top_duration_user and top_duration_user['user'] == user.id:
+        total_stars += 1
+
+    return total_stars
 
 def calculate_week_challenge_type_display(user, challenge):
     one_week_ago = now() - timedelta(days=7)
@@ -553,10 +608,32 @@ def calculate_current_week_start(user, challenge):
     return start_of_week
 
 def calculate_total_stars(user, challenge):
-    # Assuming stars are awarded based on some criteria, e.g., every 1000 calories burned = 1 star
-    total_calories = calculate_current_total_challenge_type_display(user, challenge)
-    stars = total_calories // 1000  # Example: 1 star for every 1000 calories
-    return stars
+    # Calculate the total distance and duration for the user within the challenge period
+    start_date = challenge.start_date
+    end_date = challenge.end_date
+    activities = FitnessActivity.objects.filter(user=user, date_time__range=[start_date, end_date])
+
+    total_distance = activities.aggregate(Sum('distance'))['distance__sum'] or 0
+    total_duration = activities.aggregate(Sum('duration'))['duration__sum'] or 0  # Assuming duration is in minutes
+
+    # Calculate stars based on distance and duration
+    stars_from_distance = total_distance // 169
+    stars_from_duration = (total_duration // 60) // 21  # Convert minutes to hours and calculate stars
+
+    total_stars = stars_from_distance + stars_from_duration
+
+    # Calculate bonuses
+    # Find the top performer in distance
+    top_distance_user = FitnessActivity.objects.filter(date_time__range=[start_date, end_date]).values('user').annotate(total_distance=Sum('distance')).order_by('-total_distance').first()
+    if top_distance_user and top_distance_user['user'] == user.id:
+        total_stars += 1
+
+    # Find the top performer in duration
+    top_duration_user = FitnessActivity.objects.filter(date_time__range=[start_date, end_date]).values('user').annotate(total_duration=Sum('duration')).order_by('-total_duration').first()
+    if top_duration_user and top_duration_user['user'] == user.id:
+        total_stars += 1
+
+    return total_stars
 
 def is_group_admin(user, group_id):
     group = FitnessGroup.objects.get(id=group_id)

@@ -22,15 +22,17 @@ Welcome to the **Fitness Friends Challenge**, our intuitive and dynamic web appl
 ## TODO
 - Prevent minus on Fitness level when registering a new user [v]
 - Date type misaligned at register form [v]
-- Hide request to join from group if user is already part of it
+- Hide request to join from group if user is already part of it [v]
 - Send invitation (list correctly the challenges on each fitness group)
 - Send invitation (only show appropriated fields depending on the invite type)
-- Create manager role for fitness groups
+- Create manager role for fitness groups [v]
 - Assign only manager to be able to change group visibility
 - Create manager role for challenges
 - Assign only manager to be able to edit challenges
 - Fix TSS graph in the initial home
 - Revisit css across app (yeah, it is not beautifull yet)
+- Add Perceived Effort [v]
+- Add Distance [v]
 
 ## Getting Started
 

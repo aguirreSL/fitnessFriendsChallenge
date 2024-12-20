@@ -25,12 +25,12 @@
                     <img src="{% static 'fitness/tlogo.png' %}" alt="Logo" style="height: 40px; margin-right: 10px;">
                     FFC Home
                 </a>
-        
+
                 <!-- Toggler for mobile view -->
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <i class="fas fa-bars"></i>
                 </button>
-        
+
                 <!-- Navbar content (search in the middle, links on the right) -->
                 <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
                     <!-- Search bar in the center -->
@@ -38,7 +38,7 @@
                         <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
                         <button class="btn btn-outline-success" type="submit">Search</button>
                     </form>
-        
+
                     <!-- Right-aligned links -->
                     <ul class="navbar-nav ms-auto">
                         {% if user.is_authenticated %}
@@ -102,7 +102,7 @@
     </div>
 
     <footer>
-        <p class="footer">Fitness Tracker © 2024</p>
+        <p class="footer">Fitness Tracker 0.0.3 © 2024</p>
     </footer>
 
     <!-- Bootstrap JS (for navbar toggle functionality) -->

@@ -42,6 +42,7 @@ def register(request):
         form = UserRegisterForm()
     return render(request, 'fitness/register.html', {'form': form})
 
+@login_required
 def home(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -137,6 +138,11 @@ def home(request):
                 user_position = idx + 1
                 break
 
+    # Debugging output
+    logger.debug(f"Leaderboard Data: {leaderboard_data}")
+    logger.debug(f"TSS Data: {tss_data}")
+    logger.debug(f"Activities: {activities}")
+
     return render(request, 'fitness/home.html', {
         'active_challenges': active_challenges,
         'selected_challenge': selected_challenge,
@@ -144,7 +150,6 @@ def home(request):
         'user_position': user_position,
         'tss_data': tss_data,
     })
-
 
 def add_activity(request):
     if request.method == 'POST':

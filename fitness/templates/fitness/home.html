@@ -4,6 +4,7 @@
 
 {% block content %}
 {% if user.is_authenticated %}
+
 <div class="container mt-5 mb-5">
     <h1 class="text-center">Welcome to the Fitness Friends Challenge Hub</h1>
     <p class="text-center">Track your fitness journey, achieve your goals, and have fun with your friends along the way.</p>
@@ -32,6 +33,7 @@
             </div>
             {% endif %}
         </div>
+        
     </div>
 
     {% if not active_challenges %}
@@ -73,11 +75,11 @@
 
     <div class="row mt-4">
         <div class="col-md-8 offset-md-2">
-            <h2 class="text-center">Your TSS</h2>
+            <h2 class="text-center">TSS overview</h2>
             {% if tss_data %}
                 <canvas id="tssChart" width="400" height="200"></canvas>
                 <!-- Debug statement to print tss_data -->
-                <!--<p>TSS Data: {{ tss_data }}</p>-->
+                <p>TSS Data: {{ tss_data }}</p>
             {% else %}
                 <div class="alert alert-info text-center">
                     No TSS data available to display.
@@ -86,7 +88,8 @@
         </div>
     </div>
 
-    <script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
         var ctx = document.getElementById('tssChart').getContext('2d');
         var tssData = {{ tss_data|safe }};
         console.log("TSS Data:", tssData);
@@ -128,7 +131,8 @@
                 }
             });
         }
-    </script>
+    });
+</script>
 
 {% else %}
 <p>Please <a href="{% url 'login' %}">log in</a> to view your fitness data.</p>

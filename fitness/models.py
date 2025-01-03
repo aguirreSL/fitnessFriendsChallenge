@@ -16,7 +16,7 @@ class FitnessActivity(models.Model):
         ('WAL', 'Walk'),
         ('IBK', 'Indoor Bike'),
         ('TRE', 'Treadmill'),
-        ('CAR', 'Cardio Trainning'),
+        ('CAR', 'Cardio Training'),
         # Add more activities as needed
     ]
 

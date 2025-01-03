@@ -70,6 +70,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'fitness.context_processors.version_processor',
             ],
         },
     },
@@ -108,4 +109,5 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Log in URL
+LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'profile'

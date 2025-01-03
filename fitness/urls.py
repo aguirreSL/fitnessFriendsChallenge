@@ -6,12 +6,10 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('activities/', views.activity_list, name='activity_list'),
     path('activity/delete/<int:activity_id>/', views.delete_activity, name='delete_activity'),
-    # path('diet/', views.diet_log, name='diet_log'),
     path('register/', views.register, name='register'),
     path('login/', LoginView.as_view(template_name='fitness/login.html'), name='login'),
     path('logout/', views.custom_logout, name='logout'),
     path('activities/add/', views.add_activity, name='add_activity'),
-    # path('diet/add/', views.add_diet_log, name='add_diet_log'),
     path('weight/', views.weight_tracker, name='weight_tracker'),
     path('profile/', views.profile, name='profile'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
@@ -39,4 +37,7 @@ urlpatterns = [
     path('invitation/<int:invitation_id>/reject-challenge/', views.reject_challenge_join_request, name='reject_challenge_join_request'),
     path('challenge/<int:challenge_id>/delete/', views.delete_challenge, name='delete_challenge'),
     path('group/<int:fitness_group_id>/manage_admins/', views.manage_admins, name='manage_admins'),
+    # path('diet/', views.diet_log, name='diet_log'),
+    # path('diet/add/', views.add_diet_log, name='add_diet_log'),
+    
 ]

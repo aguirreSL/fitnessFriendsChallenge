@@ -19,5 +19,9 @@
     <div class="text-center">
         <a href="{% url 'challenge_list' %}" class="btn btn-secondary mt-3">Back to Challenges</a>
     </div>
+    {% if user in challenge.fitness_group.admins.all %}
+        <a href="{% url 'delete_challenge' challenge_id=challenge.id %}">Delete Challenge</a>
+    {% endif %}
 </div>
+
 {% endblock %}

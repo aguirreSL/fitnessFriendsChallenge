@@ -4,13 +4,17 @@ from .forms import UserRegisterForm, UserProfileForm, ActivityForm, WeightEntryF
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Q
-from django.utils.timezone import now, timedelta, make_aware, is_naive #added to build home
+from django.utils.timezone import now, make_aware, is_naive #added to build home
 from django.contrib.auth.models import User  # Import the User model
-from datetime import datetime
+from django.core.paginator import Paginator
+from datetime import datetime, timedelta
+from collections import defaultdict
+from django.http import JsonResponse
 import logging
 
 logger = logging.getLogger(__name__)
 
+@login_required
 def activity_list(request):
     activities = FitnessActivity.objects.filter(user=request.user)
     return render(request, 'fitness/activity_list.html', {'activities': activities})
@@ -44,9 +48,6 @@ def register(request):
 
 @login_required
 def home(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
-
     # Fetch user's groups and active challenges
     user_groups = request.user.fitness_groups.all()
     active_challenges = Challenge.objects.filter(fitness_group__in=user_groups, end_date__gte=now())
@@ -150,7 +151,7 @@ def home(request):
         'user_position': user_position,
         'tss_data': tss_data,
     })
-
+@login_required
 def add_activity(request):
     if request.method == 'POST':
         form = ActivityForm(request.POST)
@@ -166,6 +167,7 @@ def add_activity(request):
 
     return render(request, 'fitness/add_activity.html', {'form': form})
 
+@login_required
 def edit_activity(request, activity_id):
     activity = get_object_or_404(FitnessActivity, id=activity_id)
     if request.method == 'POST':
@@ -189,8 +191,6 @@ def edit_activity(request, activity_id):
 #     else:
 #         form = DietaryLogForm()
 #     return render(request, 'fitness/add_diet_log.html', {'form': form})
-
-
 
 def weight_tracker(request):
     if request.method == 'POST':
@@ -246,6 +246,7 @@ def edit_profile(request):
     }
     return render(request, 'fitness/edit_profile.html', context)
 
+@login_required
 def user_profile(request, user_id):
     user = get_object_or_404(User, id=user_id)
     user_profile = get_object_or_404(UserProfile, user=user)
@@ -260,6 +261,7 @@ def user_profile(request, user_id):
     }
     return render(request, 'fitness/user_profile.html', context)
 
+@login_required
 def create_group(request):
     if request.method == 'POST':
         form = FitnessGroupForm(request.POST)
@@ -275,6 +277,7 @@ def create_group(request):
         form = FitnessGroupForm()
     return render(request, 'fitness/create_group.html', {'form': form})
 
+@login_required
 def group_list(request):
     user_groups = request.user.fitness_groups.all()  # Groups the user is part of
     public_groups = FitnessGroup.objects.filter(is_public=True)  # Public groups
@@ -541,7 +544,7 @@ def challenge_detail(request, challenge_id):
         total_stars = calculate_total_stars(user, challenge)
         current_month_stars = calculate_month_stars(user, challenge, now().month)
 
-        monthly_stars = {f'{month}_stars': calculate_month_stars(user, challenge, month) for month in range(1, 13)}
+        monthly_stars = {f'{month}_stars': calculate_month_stars(user, challenge, month) for month in range(1, 12)}
 
         participants_data.append({
             'username': user.username,
@@ -554,9 +557,47 @@ def challenge_detail(request, challenge_id):
             **monthly_stars
         })
 
+    # Fetch activities for the feed
+    activities = FitnessActivity.objects.filter(user__in=challenge.users.all(), date_time__range=[challenge.start_date, challenge.end_date]).order_by('-date_time')
+    paginator = Paginator(activities, 10)  # Show 10 activities per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        activities_data = [
+            {
+                'username': activity.user.username,
+                'activity_type': activity.get_activity_type_display(),
+                'duration': activity.duration,
+                'date_time': activity.date_time.strftime('%d %b %Y'),
+                'likes_count': activity.likes_count
+            }
+            for activity in page_obj
+        ]
+        return JsonResponse({'activities': activities_data, 'has_next': page_obj.has_next()})
+
+    # Prepare data for the graph
+    challenge_data = []
+    for participant in challenge.users.all():
+        activities = FitnessActivity.objects.filter(user=participant, date_time__range=[challenge.start_date, challenge.end_date])
+        weekly_sums = defaultdict(float)
+        for activity in activities:
+            week_start = activity.date_time - timedelta(days=activity.date_time.weekday())
+            weekly_sums[week_start.date()] += activity.tss
+
+        dates = sorted(weekly_sums.keys())
+        sums = [weekly_sums[date] for date in dates]
+        challenge_data.append({
+            'username': participant.username,
+            'dates': dates,
+            'sums': sums
+        })
+
     return render(request, 'fitness/challenge_detail.html', {
         'challenge': challenge,
         'participants_data': participants_data,
+        'page_obj': page_obj,
+        'challenge_data': challenge_data,
     })
 
 def calculate_month_stars(user, challenge, month):

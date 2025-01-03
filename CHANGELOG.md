@@ -10,7 +10,7 @@ REVISION HISTORY : ffchub
 
 20-12-2024 0.0.3
 ----------------------------------------------------
-+ new improvement
++ Commit with Changelog and challenge list refactored
 
 19-12-2024 0.0.2
 ----------------------------------------------------
